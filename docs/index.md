@@ -1,0 +1,78 @@
+---
+layout: home
+title: DocsContext
+titleTemplate: Local-first documentation grounding
+description: Build versioned documentation packages once. Give AI agents precise local context through MCP.
+hero:
+  name: DocsContext
+  text: Documentation that stays close to your code
+  tagline: Build versioned docs into portable SQLite packages. Query them through MCP with no cloud dependency on the hot path.
+  actions:
+    - theme: brand
+      text: Start building
+      link: /guide/quickstart
+    - theme: alt
+      text: See the architecture
+      link: /guide/architecture
+features:
+  - icon: "01"
+    title: Build once
+    details: Ingest Git repositories, local folders, llms.txt sites, or raw pages into searchable packages.
+  - icon: "02"
+    title: Query locally
+    details: SQLite FTS5 and BM25 return focused sections with token budgets and relevance controls.
+  - icon: "03"
+    title: Ground agents
+    details: Expose precise documentation through the standard Model Context Protocol and Microsoft Agent Framework.
+---
+
+<div class="home-note">
+  <strong>Core promise:</strong> exact library version, local source, inspectable retrieval.
+</div>
+
+## Choose your starting point
+
+Start with the workflow that matches your next task. Each path leads to a concrete action instead of a product tour.
+
+<div class="home-paths">
+  <a href="/libraries" class="home-path">
+    <strong>Find a library</strong>
+    <span>Browse 20 curated sources and build one with a short command.</span>
+  </a>
+  <a href="/features" class="home-path">
+    <strong>Understand the workflow</strong>
+    <span>See how ingestion, retrieval, MCP, and team sharing fit together.</span>
+  </a>
+  <a href="/integrations" class="home-path">
+    <strong>Connect an agent</strong>
+    <span>Copy a standard stdio configuration for your MCP-compatible host.</span>
+  </a>
+</div>
+
+## Made for agent workflows
+
+Documentation lookup should disappear into the development loop. Add packages during project setup, ship them with a team workspace, or rebuild them in CI. The agent gets the same evidence every time.
+
+<div class="home-grid">
+  <a href="/features" class="home-grid-item">
+    <span class="home-grid-kicker">WORKFLOWS</span>
+    <strong>Coding assistants</strong>
+    <span>Keep framework APIs aligned with the version in your project.</span>
+  </a>
+  <a href="/features" class="home-grid-item">
+    <span class="home-grid-kicker">KNOWLEDGE</span>
+    <strong>Private runbooks</strong>
+    <span>Index internal Markdown and keep proprietary context on your machine.</span>
+  </a>
+  <a href="/features" class="home-grid-item">
+    <span class="home-grid-kicker">AUTOMATION</span>
+    <strong>CI pipelines</strong>
+    <span>Use deterministic packages for review bots, migrations, and validation.</span>
+  </a>
+</div>
+
+## One server, any MCP client
+
+DocsContext speaks standard stdio MCP. Connect it to your editor or agent host, then use the same package store from interactive sessions and automation.
+
+[Configure an integration](/integrations) <span class="home-arrow">-></span>

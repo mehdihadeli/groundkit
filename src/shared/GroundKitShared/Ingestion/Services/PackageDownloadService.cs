@@ -1,4 +1,5 @@
 using System.Net.Http.Headers;
+using System.Text.RegularExpressions;
 using GroundKit.Configuration;
 using GroundKit.Core.Abstractions;
 using GroundKit.Core.Contracts;
@@ -36,7 +37,7 @@ public sealed class PackageDownloadService(
             && uri.Scheme is "http" or "https"
         )
         {
-            if (uri.AbsolutePath.EndsWith(".db", StringComparison.OrdinalIgnoreCase))
+            if (IsPackageUrl(uri))
             {
                 return await DownloadUrlAsync(uri, cancellationToken);
             }
@@ -190,6 +191,22 @@ public sealed class PackageDownloadService(
                 $"Package response exceeds {options.MaxResponseBytes:N0} bytes."
             );
         }
+    }
+
+    private static bool IsPackageUrl(Uri uri)
+    {
+        if (uri.AbsolutePath.EndsWith(".db", StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+
+        var fileName = uri.AbsolutePath.Trim('/').Split('/').LastOrDefault();
+        return fileName is not null
+            && Regex.IsMatch(
+                fileName,
+                @"^[^/]+@v?\d+(?:\.\d+){1,3}$",
+                RegexOptions.CultureInvariant
+            );
     }
 
     private static (string Registry, string Name) ParsePackageReference(string value)

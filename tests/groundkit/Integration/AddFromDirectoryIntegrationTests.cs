@@ -1,5 +1,9 @@
 using System.Diagnostics;
+using System.Net;
+using System.Net.Sockets;
+using System.Text;
 using GroundKit.AppHost;
+using GroundKit.Configuration;
 using GroundKit.Core.Contracts;
 using GroundKit.Ingestion.Services;
 using GroundKit.Mcp;
@@ -175,6 +179,124 @@ public sealed class AddFromDirectoryIntegrationTests : IDisposable
         new FileInfo(savedCopyPath).Length.ShouldBeGreaterThan(0);
     }
 
+    [Fact]
+    [Trait("Category", "Integration")]
+    public async Task Should_Add_Local_Saved_Database_File()
+    {
+        var savedCopyPath = Path.Combine(_root, "mattpocock-skills@1.2.3.db");
+        var sourceExitCode = await CreateApplication("local-file-source")
+            .RunAsync(
+                [
+                    "add",
+                    _repositoryPath,
+                    "--path",
+                    "docs",
+                    "--name",
+                    "mattpocock-skills",
+                    "--pkg-version",
+                    "1.2.3",
+                    "--save",
+                    savedCopyPath,
+                ]
+            );
+
+        sourceExitCode.ShouldBe(0);
+        File.Exists(savedCopyPath).ShouldBeTrue();
+
+        var destinationStore = CreatePackageStore("local-file-destination");
+        var destinationBuilder = new DocumentPackageBuilder(
+            new SourceDetector(),
+            new EmptyHttpClientFactory(),
+            NullLogger<DocumentPackageBuilder>.Instance
+        );
+        var downloader = new PackageDownloadService(
+            null!,
+            destinationStore,
+            destinationBuilder,
+            new DefaultHttpClientFactory(),
+            new GroundKitOptions(),
+            NullLogger<PackageDownloadService>.Instance
+        );
+        var destinationApplication = new CliApplication(
+            destinationBuilder,
+            destinationStore,
+            CreateMcpServer(),
+            packageDownloadService: downloader
+        );
+
+        var exitCode = await destinationApplication.RunAsync(["add", savedCopyPath]);
+        var package = (
+            await destinationStore.ListAsync(TestContext.Current.CancellationToken)
+        ).ShouldHaveSingleItem();
+
+        exitCode.ShouldBe(0);
+        package.PackageId.ShouldBe("mattpocock-skills");
+        package.Version.ShouldBe("1.2.3");
+        package.DocumentCount.ShouldBeGreaterThan(0);
+        package.ChunkCount.ShouldBeGreaterThan(0);
+    }
+
+    [Fact]
+    [Trait("Category", "Integration")]
+    public async Task Should_Add_Package_From_Locally_Hosted_Database_Url()
+    {
+        var savedCopyPath = Path.Combine(_root, "shared", "mattpocock-skills@1.2.3.db");
+        var sourceApplication = CreateApplication("host-source");
+        var sourceExitCode = await sourceApplication.RunAsync(
+            [
+                "add",
+                _repositoryPath,
+                "--path",
+                "docs",
+                "--name",
+                "mattpocock-skills",
+                "--pkg-version",
+                "1.2.3",
+                "--save",
+                savedCopyPath,
+            ]
+        );
+
+        sourceExitCode.ShouldBe(0);
+        File.Exists(savedCopyPath).ShouldBeTrue();
+
+        using var server = new LocalPackageServer(savedCopyPath);
+        var destinationStore = CreatePackageStore("host-destination");
+        var destinationBuilder = new DocumentPackageBuilder(
+            new SourceDetector(),
+            new EmptyHttpClientFactory(),
+            NullLogger<DocumentPackageBuilder>.Instance
+        );
+        var downloader = new PackageDownloadService(
+            null!,
+            destinationStore,
+            destinationBuilder,
+            new DefaultHttpClientFactory(),
+            new GroundKitOptions(),
+            NullLogger<PackageDownloadService>.Instance
+        );
+        var destinationApplication = new CliApplication(
+            destinationBuilder,
+            destinationStore,
+            CreateMcpServer(),
+            packageDownloadService: downloader
+        );
+        var servingTask = server.ServeOnceAsync(TestContext.Current.CancellationToken);
+
+        var exitCode = await destinationApplication.RunAsync(["add", server.Url]);
+        await servingTask;
+
+        var package = (
+            await destinationStore.ListAsync(TestContext.Current.CancellationToken)
+        ).ShouldHaveSingleItem();
+
+        exitCode.ShouldBe(0);
+        package.PackageId.ShouldBe("mattpocock-skills");
+        package.Version.ShouldBe("1.2.3");
+        package.DocumentCount.ShouldBeGreaterThan(0);
+        package.ChunkCount.ShouldBeGreaterThan(0);
+    }
+
     private CliApplication CreateApplication(string scenario)
     {
         return new CliApplication(
@@ -235,5 +357,54 @@ public sealed class AddFromDirectoryIntegrationTests : IDisposable
     private sealed class EmptyHttpClientFactory : IHttpClientFactory
     {
         public HttpClient CreateClient(string name) => new();
+    }
+
+    private sealed class DefaultHttpClientFactory : IHttpClientFactory
+    {
+        public HttpClient CreateClient(string name) => new();
+    }
+
+    private sealed class LocalPackageServer : IDisposable
+    {
+        private readonly string packagePath;
+        private readonly TcpListener listener = new(IPAddress.Loopback, 0);
+
+        public LocalPackageServer(string packagePath)
+        {
+            this.packagePath = packagePath;
+            listener.Start();
+            var endpoint = (IPEndPoint)listener.LocalEndpoint;
+            Url = $"http://127.0.0.1:{endpoint.Port}/mattpocock-skills@1.2.3";
+        }
+
+        public string Url { get; }
+
+        public async Task ServeOnceAsync(CancellationToken cancellationToken)
+        {
+            using var client = await listener.AcceptTcpClientAsync(cancellationToken);
+            await using var stream = client.GetStream();
+            var request = new StringBuilder();
+            var buffer = new byte[1024];
+            while (!request.ToString().Contains("\r\n\r\n", StringComparison.Ordinal))
+            {
+                var read = await stream.ReadAsync(buffer, cancellationToken);
+                if (read == 0)
+                {
+                    break;
+                }
+
+                request.Append(Encoding.ASCII.GetString(buffer, 0, read));
+            }
+
+            var length = new FileInfo(packagePath).Length;
+            var headers = Encoding.ASCII.GetBytes(
+                $"HTTP/1.1 200 OK\r\nContent-Type: application/octet-stream\r\nContent-Length: {length}\r\nConnection: close\r\n\r\n"
+            );
+            await stream.WriteAsync(headers, cancellationToken);
+            await using var package = File.OpenRead(packagePath);
+            await package.CopyToAsync(stream, cancellationToken);
+        }
+
+        public void Dispose() => listener.Stop();
     }
 }

@@ -58,6 +58,76 @@ public sealed class CliApplicationTests
     }
 
     [Fact]
+    public async Task Should_Add_Remote_Package_Url_Through_Download_Service()
+    {
+        const string packageUrl = "https://localhost/mattpocock-skills@1.2.3";
+        var source = new DocumentationSource(SourceKind.RawPage, "source", "Source", packageUrl);
+        var builder = new RecordingPackageBuilder(CreateBuildResult(source));
+        var store = new RecordingPackageStore(source, "C:/packages/mattpocock-skills@1.2.3.db");
+        var downloader = Substitute.For<IPackageDownloadService>();
+        downloader
+            .InstallAsync(packageUrl, null, Arg.Any<CancellationToken>())
+            .Returns("C:/packages/mattpocock-skills@1.2.3.db");
+        var application = new CliApplication(
+            builder,
+            store,
+            CreateMcpServer(),
+            packageDownloadService: downloader
+        );
+
+        var exitCode = await application.RunAsync(["add", packageUrl]);
+
+        exitCode.ShouldBe(0);
+        builder.Input.ShouldBeNull();
+        store.SaveCallCount.ShouldBe(0);
+        await downloader.Received(1).InstallAsync(packageUrl, null, Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task Should_Add_Local_Package_File_Through_Download_Service()
+    {
+        var packagePath = Path.Combine(
+            Path.GetTempPath(),
+            $"mattpocock-skills@1.2.3-{Guid.NewGuid():N}.db"
+        );
+        await File.WriteAllBytesAsync(packagePath, [1, 2, 3]);
+        try
+        {
+            var source = new DocumentationSource(
+                SourceKind.RawPage,
+                "source",
+                "Source",
+                packagePath
+            );
+            var builder = new RecordingPackageBuilder(CreateBuildResult(source));
+            var store = new RecordingPackageStore(source, "C:/packages/mattpocock-skills@1.2.3.db");
+            var downloader = Substitute.For<IPackageDownloadService>();
+            downloader
+                .InstallAsync(packagePath, null, Arg.Any<CancellationToken>())
+                .Returns("C:/packages/mattpocock-skills@1.2.3.db");
+            var application = new CliApplication(
+                builder,
+                store,
+                CreateMcpServer(),
+                packageDownloadService: downloader
+            );
+
+            var exitCode = await application.RunAsync(["add", packagePath]);
+
+            exitCode.ShouldBe(0);
+            builder.Input.ShouldBeNull();
+            store.SaveCallCount.ShouldBe(0);
+            await downloader
+                .Received(1)
+                .InstallAsync(packagePath, null, Arg.Any<CancellationToken>());
+        }
+        finally
+        {
+            File.Delete(packagePath);
+        }
+    }
+
+    [Fact]
     public async Task Should_Pass_Docs_Path_To_Add()
     {
         var source = new DocumentationSource(

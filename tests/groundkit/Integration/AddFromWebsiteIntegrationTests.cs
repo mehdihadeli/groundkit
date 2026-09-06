@@ -13,6 +13,10 @@ public sealed class AddFromWebsiteIntegrationTests : IDisposable
 {
     private const string WebsiteRoot = "https://agentgateway.dev";
     private const string LlmsTextUrl = "https://agentgateway.dev/llms.txt";
+    private const string BlogUrl =
+        "https://agentgateway.dev/blog/2026-08-20-benchmarking-agentgateway-epp-proxy-overhead/";
+    private const string GitHubReadmeUrl =
+        "https://github.com/agentgateway/agentgateway/blob/main/README.md";
     private readonly string _root = Path.Combine(
         Path.GetTempPath(),
         $"groundkit-website-add-{Guid.NewGuid():N}"
@@ -115,6 +119,47 @@ public sealed class AddFromWebsiteIntegrationTests : IDisposable
         package.Version.ShouldBe("1.0.0");
         File.Exists(savedCopyPath).ShouldBeTrue();
         new FileInfo(savedCopyPath).Length.ShouldBeGreaterThan(0);
+    }
+
+    [Fact]
+    [Trait("Category", "Integration")]
+    public async Task Should_Add_Arbitrary_Blog_Article_When_Llms_Is_Not_The_Source()
+    {
+        var packageStore = CreatePackageStore("blog");
+        var exitCode = await CreateApplication(packageStore).RunAsync(["add", BlogUrl]);
+
+        var package = (
+            await packageStore.ListAsync(TestContext.Current.CancellationToken)
+        ).ShouldHaveSingleItem();
+
+        exitCode.ShouldBe(0);
+        package.DocumentCount.ShouldBe(1);
+        package.ChunkCount.ShouldBeGreaterThan(0);
+    }
+
+    [Fact]
+    [Trait("Category", "Integration")]
+    public async Task Should_Add_GitHub_Blob_Markdown_As_Arbitrary_URL()
+    {
+        var packageStore = CreatePackageStore("github-readme");
+        var exitCode = await CreateApplication(packageStore)
+            .RunAsync(["add", GitHubReadmeUrl, "--name", "agentgateway-readme"]);
+
+        var package = (
+            await packageStore.ListAsync(TestContext.Current.CancellationToken)
+        ).ShouldHaveSingleItem();
+        var source = await packageStore.GetSourceAsync(
+            package.PackageId,
+            TestContext.Current.CancellationToken
+        );
+
+        exitCode.ShouldBe(0);
+        package.PackageId.ShouldBe("agentgateway-readme");
+        package.DocumentCount.ShouldBe(1);
+        package.ChunkCount.ShouldBeGreaterThan(0);
+        source.ShouldNotBeNull();
+        source.Kind.ShouldBe(SourceKind.RawPage);
+        source.Location.ShouldBe(GitHubReadmeUrl);
     }
 
     private CliApplication CreateApplication(SqlitePackageStore packageStore)

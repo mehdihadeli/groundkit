@@ -6,7 +6,7 @@ The repository also includes a declarative starter registry in `registry/`. Its 
 
 ## Sources
 
-The builder accepts local directories, Git repositories, `llms.txt` and `llms-full.txt` URLs, and raw documentation pages.
+The builder accepts local directories, Git repositories, `llms.txt` and `llms-full.txt` URLs, and arbitrary documentation pages.
 
 For a website root, GroundKit probes `/llms-full.txt` first and then `/llms.txt`.
 If the available `llms.txt` is an index rather than inlined documentation,
@@ -17,6 +17,16 @@ GroundKit follows its links and fetches the linked documents. A direct
 groundkit add https://agentgateway.dev
 groundkit add https://agentgateway.dev/llms.txt
 groundkit add https://agentgateway.dev --name agent-gateway
+```
+
+If neither llms endpoint exists, a website root falls back to fetching its page
+directly. HTML pages use readable article extraction so navigation, subscription
+calls to action, and comment widgets are not indexed. Raw Markdown URLs are
+indexed directly, including GitHub blob URLs:
+
+```bash
+groundkit add https://agentgateway.dev/blog/2026-08-20-benchmarking-agentgateway-epp-proxy-overhead/
+groundkit add https://github.com/agentgateway/agentgateway/blob/main/README.md --name agentgateway-readme
 ```
 
 ### Local directories
@@ -65,6 +75,26 @@ groundkit add ./my-library --path docs --name my-library --pkg-version 1.0.0 --s
 `--save` accepts either a destination directory or a `.db` file path. A
 directory receives the normal package filename, making the copy ready for
 sharing or importing on another machine.
+
+Host a saved database on an HTTP server and add its URL from another machine:
+
+```bash
+groundkit add https://github.com/mattpocock/skills --path docs \
+	--name mattpocock-skills --pkg-version 1.2.3 \
+	--save ./artifacts/mattpocock-skills@1.2.3.db
+
+groundkit add https://packages.example.com/mattpocock-skills@1.2.3
+```
+
+Remote package URLs may use either the `.db` filename or a hosted
+`name@version` path. GroundKit imports the artifact into its local package
+store; subsequent queries do not contact the host.
+
+The same artifact can be imported from the local filesystem:
+
+```bash
+groundkit add ./mattpocock-skills@1.2.3.db
+```
 
 During ingestion, GroundKit records source kind, canonical source ID, location, optional version, tag or branch, fingerprint, build timestamps, document counts, chunk counts, and warnings. Use `inspect` to review this provenance.
 

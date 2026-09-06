@@ -298,12 +298,54 @@ groundkit add https://agentgateway.dev
 # Add a direct llms.txt URL and follow its linked documents
 groundkit add https://agentgateway.dev/llms.txt
 
-# Use a custom package name
+# Use a custom package name and finding llms.txt
 groundkit add https://agentgateway.dev --name agent-gateway
+```
 
+**From any URL (blog posts, articles, raw Markdown):**
+
+```bash
+# Add an article; falls back to direct HTML extraction when no llms.txt exists
+groundkit add https://agentgateway.dev/blog/2026-08-20-benchmarking-agentgateway-epp-proxy-overhead/
+
+# Add raw Markdown from a GitHub blob URL
+groundkit add https://github.com/agentgateway/agentgateway/blob/main/README.md --name agentgateway-readme
+```
+
+**From a package file:**
+
+```bash
 groundkit --add ./my-project --docs-path docs
 groundkit --add https://cdn.example.com/react@18.db
 groundkit --add ./react@19.1.0.db
+```
+
+**From a local saved database:**
+
+After saving a package database, add it from the local filesystem:
+
+```bash
+groundkit add https://github.com/mattpocock/skills \
+  --path docs \
+  --name mattpocock-skills \
+  --pkg-version 1.2.3 \
+  --save ./mattpocock-skills@1.2.3.db
+
+groundkit add ./mattpocock-skills@1.2.3.db
+```
+
+Build a package once, save the portable database, and host it from any HTTP
+server. `add` downloads and installs remote `.db` URLs, including hosted
+`name@version` paths:
+
+```bash
+groundkit add https://github.com/mattpocock/skills \
+  --path docs \
+  --name mattpocock-skills \
+  --pkg-version 1.2.3 \
+  --save ./artifacts/mattpocock-skills@1.2.3.db
+
+groundkit add https://packages.example.com/mattpocock-skills@1.2.3
 ```
 
 `add` supports `--path <path>` and its `--docs-path <path>` alias for repository
@@ -320,12 +362,14 @@ groundkit --install https://example.com/react@19.1.0.db
 ```
 
 For a website root, `add` first probes `/llms-full.txt` and `/llms.txt`. If
-neither endpoint exists, root-URL fallback to the page itself is not currently
-implemented. Direct article and raw Markdown URLs do work:
+neither endpoint exists, GroundKit fetches the requested page directly. HTML
+pages are reduced to readable article content before indexing; raw Markdown and
+other text responses are indexed as-is. Direct article and raw Markdown URLs
+also work:
 
 ```bash
-groundkit --add https://overreacted.io/things-i-dont-know-as-of-2018/
-groundkit --add https://raw.githubusercontent.com/neuledge/context/main/README.md
+groundkit add https://overreacted.io/things-i-dont-know-as-of-2018/
+groundkit add https://raw.githubusercontent.com/neuledge/context/main/README.md
 ```
 
 If a source produces fewer than three indexed sections, GroundKit prints a

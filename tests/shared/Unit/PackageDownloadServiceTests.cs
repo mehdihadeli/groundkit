@@ -65,6 +65,25 @@ public sealed class PackageDownloadServiceTests : IDisposable
         importedBytes.ShouldBe([9, 8, 7]);
     }
 
+    [Fact]
+    public async Task Should_Download_Remote_Package_Without_Database_Extension()
+    {
+        var importedBytes = Array.Empty<byte>();
+        var store = Substitute.For<IPackageStore>();
+        store
+            .ImportAsync(
+                Arg.Do<string>(path => importedBytes = File.ReadAllBytes(path)),
+                Arg.Any<CancellationToken>()
+            )
+            .Returns("imported.db");
+        var service = CreateService(store, [6, 5, 4]);
+
+        var installedPath = await service.InstallAsync("https://localhost/mattpocock-skills@1.2.3");
+
+        installedPath.ShouldBe("imported.db");
+        importedBytes.ShouldBe([6, 5, 4]);
+    }
+
     private PackageDownloadService CreateService(
         IPackageStore store,
         byte[]? remotePackage = null

@@ -49,6 +49,17 @@ public sealed class SourceDetector : ISourceDetector
             throw new InvalidOperationException($"Unsupported source input: '{input}'.");
         }
 
+        if (IsGitHubBlob(uri))
+        {
+            var blobDisplay = GetDisplayName(uri);
+            return new DocumentationSource(
+                SourceKind.RawPage,
+                Canonicalize(blobDisplay),
+                blobDisplay,
+                input
+            );
+        }
+
         if (IsGitRepository(uri, input))
         {
             var repositoryUri = uri;
@@ -106,6 +117,14 @@ public sealed class SourceDetector : ISourceDetector
         var segments = uri.AbsolutePath.Trim('/').Split('/', StringSplitOptions.RemoveEmptyEntries);
         return segments.Length >= 2;
     }
+
+    private static bool IsGitHubBlob(Uri uri) =>
+        uri.Host.Equals("github.com", StringComparison.OrdinalIgnoreCase)
+        && uri.AbsolutePath.Trim('/')
+            .Split('/', StringSplitOptions.RemoveEmptyEntries)
+            .Take(3)
+            .LastOrDefault()
+            ?.Equals("blob", StringComparison.OrdinalIgnoreCase) == true;
 
     private static bool TryParseGitHubTreeUrl(Uri uri, out Uri repositoryUri, out string? gitRef)
     {

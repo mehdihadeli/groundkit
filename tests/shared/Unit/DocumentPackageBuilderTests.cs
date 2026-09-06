@@ -181,6 +181,50 @@ public sealed class DocumentPackageBuilderTests : IDisposable
     }
 
     [Fact]
+    public async Task Should_Fall_Back_To_Reading_Website_Page_When_Llms_Is_Missing()
+    {
+        var factory = new TestHttpClientFactory(
+            new Dictionary<string, HttpResponseMessage>
+            {
+                ["https://example.com/llms-full.txt"] = NotFound(),
+                ["https://example.com/llms.txt"] = NotFound(),
+                ["https://example.com/"] = HtmlResponse(
+                    "<html><head><title>Article</title></head><body><nav>Subscribe</nav><main><article><h1>Article</h1><p>Useful content.</p></article></main><footer>Comments</footer></body></html>"
+                ),
+            }
+        );
+
+        var result = await CreateBuilder(factory).BuildAsync("https://example.com");
+
+        result.Documents.ShouldHaveSingleItem();
+        result.Documents[0].Content.ShouldContain("Useful content.");
+        result.Documents[0].Content.ShouldNotContain("Subscribe");
+        result.Documents[0].Content.ShouldNotContain("Comments");
+    }
+
+    [Fact]
+    public async Task Should_Load_GitHub_Blob_Markdown_From_Raw_Content_Url()
+    {
+        var factory = new TestHttpClientFactory(
+            new Dictionary<string, HttpResponseMessage>
+            {
+                ["https://raw.githubusercontent.com/agentgateway/agentgateway/main/README.md"] =
+                    TextResponse("# Agentgateway\n\nRaw Markdown content."),
+            }
+        );
+
+        var result = await CreateBuilder(factory)
+            .BuildAsync("https://github.com/agentgateway/agentgateway/blob/main/README.md");
+
+        result.Source.Kind.ShouldBe(SourceKind.RawPage);
+        result.Source.Location.ShouldBe(
+            "https://github.com/agentgateway/agentgateway/blob/main/README.md"
+        );
+        result.Documents.ShouldHaveSingleItem();
+        result.Documents[0].Content.ShouldContain("Raw Markdown content.");
+    }
+
+    [Fact]
     public async Task Should_Extract_Title_Headings_And_Code_From_Raw_Html_Page()
     {
         var factory = new TestHttpClientFactory(
@@ -189,7 +233,7 @@ public sealed class DocumentPackageBuilderTests : IDisposable
                 ["https://example.com/article"] = new HttpResponseMessage(HttpStatusCode.OK)
                 {
                     Content = new StringContent(
-                        "<html><head><title>Article</title></head><body><h1>Intro</h1><p>Hello</p><pre><code>dotnet run</code></pre></body></html>",
+                        "<html><head><title>Article</title></head><body><nav>Subscribe</nav><article><h1>Intro</h1><p>Hello</p><pre><code>dotnet run</code></pre></article><footer>Comments</footer></body></html>",
                         MediaTypeHeaderValue.Parse("text/html")
                     ),
                 },
@@ -203,6 +247,8 @@ public sealed class DocumentPackageBuilderTests : IDisposable
         result.Documents.Single().Content.ShouldContain("# Intro");
         result.Documents.Single().Content.ShouldContain("```text");
         result.Documents.Single().Content.ShouldContain("dotnet run");
+        result.Documents.Single().Content.ShouldNotContain("Subscribe");
+        result.Documents.Single().Content.ShouldNotContain("Comments");
     }
 
     private DocumentPackageBuilder CreateBuilder(IHttpClientFactory? httpClientFactory = null)
@@ -267,4 +313,10 @@ public sealed class DocumentPackageBuilderTests : IDisposable
 
     private static HttpResponseMessage TextResponse(string content) =>
         new(HttpStatusCode.OK) { Content = new StringContent(content) };
+
+    private static HttpResponseMessage HtmlResponse(string content) =>
+        new(HttpStatusCode.OK)
+        {
+            Content = new StringContent(content, MediaTypeHeaderValue.Parse("text/html")),
+        };
 }

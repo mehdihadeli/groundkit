@@ -312,6 +312,11 @@ public sealed class DocumentPackageBuilder(
     )
     {
         var llmsUri = await ResolveLlmsUriAsync(source.Location, cancellationToken);
+        if (llmsUri is null)
+        {
+            return await LoadFromRawPageAsync(source, cancellationToken);
+        }
+
         var llmsContent = await DownloadStringAsync(
             llmsUri,
             GroundKitTelemetry.Activities.LlmsFetch,
@@ -386,7 +391,7 @@ public sealed class DocumentPackageBuilder(
     )
     {
         var document = await LoadRemoteDocumentAsync(
-            new Uri(source.Location),
+            ResolveRemoteDocumentUri(new Uri(source.Location)),
             source.DisplayName,
             cancellationToken
         );
@@ -691,7 +696,7 @@ public sealed class DocumentPackageBuilder(
         }
     }
 
-    private async Task<Uri> ResolveLlmsUriAsync(string input, CancellationToken cancellationToken)
+    private async Task<Uri?> ResolveLlmsUriAsync(string input, CancellationToken cancellationToken)
     {
         var inputUri = new Uri(input, UriKind.Absolute);
         if (
@@ -717,9 +722,34 @@ public sealed class DocumentPackageBuilder(
             }
         }
 
-        throw new InvalidOperationException(
-            $"No llms.txt or llms-full.txt endpoint was found for '{inputUri}'."
+        return null;
+    }
+
+    private static Uri ResolveRemoteDocumentUri(Uri uri)
+    {
+        if (
+            !uri.Host.Equals("github.com", StringComparison.OrdinalIgnoreCase)
+            || !uri.AbsolutePath.Contains("/blob/", StringComparison.OrdinalIgnoreCase)
+        )
+        {
+            return uri;
+        }
+
+        var segments = uri.AbsolutePath.Trim('/').Split('/', StringSplitOptions.RemoveEmptyEntries);
+        var blobIndex = Array.FindIndex(
+            segments,
+            segment => segment.Equals("blob", StringComparison.OrdinalIgnoreCase)
         );
+        if (segments.Length < blobIndex + 2 || blobIndex < 2)
+        {
+            return uri;
+        }
+
+        var rawPath = string.Join(
+            '/',
+            segments.Take(2).Append(segments[blobIndex + 1]).Concat(segments[(blobIndex + 2)..])
+        );
+        return new Uri($"https://raw.githubusercontent.com/{rawPath}", UriKind.Absolute);
     }
 
     private async Task<bool> CanFetchAsync(Uri uri, CancellationToken cancellationToken)
@@ -882,6 +912,29 @@ public sealed class DocumentPackageBuilder(
         title = HtmlTitlePattern.Match(working) is { Success: true } titleMatch
             ? WebUtility.HtmlDecode(titleMatch.Groups[1].Value.Trim())
             : fallbackTitle;
+
+        var readableMatch = Regex.Match(
+            working,
+            "<(article|main)\\b[^>]*>(.*?)</\\1>",
+            RegexOptions.IgnoreCase | RegexOptions.Singleline
+        );
+        if (readableMatch.Success)
+        {
+            working = readableMatch.Groups[2].Value;
+        }
+
+        working = Regex.Replace(
+            working,
+            "<(nav|header|footer|aside|form|dialog|template)\\b[^>]*>.*?</\\1>",
+            string.Empty,
+            RegexOptions.IgnoreCase | RegexOptions.Singleline
+        );
+        working = Regex.Replace(
+            working,
+            "<(div|section)\\b[^>]*(?:subscribe|newsletter|comments?|comment)\\b[^>]*>.*?</\\1>",
+            string.Empty,
+            RegexOptions.IgnoreCase | RegexOptions.Singleline
+        );
 
         working = HtmlCodeBlockPattern.Replace(
             working,

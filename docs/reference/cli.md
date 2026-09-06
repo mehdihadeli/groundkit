@@ -4,7 +4,7 @@ Run commands with `dotnet run --project src/groundkit -- <command>`. After publi
 
 ## Add sources
 
-`add` accepts a local directory, Git repository URL, `llms.txt` URL, or raw documentation URL.
+`add` accepts a local directory, Git repository URL, `llms.txt` URL, or arbitrary documentation URL.
 
 | Option                    | Purpose                                                                                                      |
 | ------------------------- | ------------------------------------------------------------------------------------------------------------ |
@@ -47,6 +47,34 @@ groundkit add https://agentgateway.dev/llms.txt
 
 # Override the generated package name
 groundkit add https://agentgateway.dev --name agent-gateway
+
+# Fall back to readable extraction for an article without llms.txt
+groundkit add https://agentgateway.dev/blog/2026-08-20-benchmarking-agentgateway-epp-proxy-overhead/
+
+# Fetch raw Markdown from a GitHub blob URL
+groundkit add https://github.com/agentgateway/agentgateway/blob/main/README.md --name agentgateway-readme
+```
+
+For website roots, GroundKit probes `/llms-full.txt` and then `/llms.txt`. If
+neither endpoint exists, it fetches the URL directly. HTML is reduced to
+readable article content; Markdown and other text responses are indexed as-is.
+
+Packages can also be shared as hosted SQLite artifacts. Build and save a
+package, place the `.db` file on an HTTP server, then add its URL. The URL may
+end in `.db` or use a `name@version` path:
+
+```bash
+groundkit add https://github.com/mattpocock/skills --path docs \
+	--name mattpocock-skills --pkg-version 1.2.3 \
+	--save ./artifacts/mattpocock-skills@1.2.3.db
+
+groundkit add https://packages.example.com/mattpocock-skills@1.2.3
+```
+
+To add a saved database from the local filesystem, pass its `.db` path directly:
+
+```bash
+groundkit add ./mattpocock-skills@1.2.3.db
 ```
 
 For Git repository URLs without `--tag`, GroundKit selects the latest stable tag when tags are available. `--choose-tag` changes this to an interactive selection.

@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using GroundKit.Core.Abstractions;
 using GroundKit.Core.Contracts;
 using GroundKit.Ingestion.Services;
@@ -74,6 +75,22 @@ public sealed class CliApplication(
         var savePath = TryReadOption(args, "--save");
         var gitRef = TryReadOption(args, "--tag");
         var chooseTag = HasFlag(args, "--choose-tag");
+
+        if (
+            packageDownloadService is not null
+            && (IsLocalPackageFile(source) || IsRemotePackageUrl(source))
+        )
+        {
+            var importedPackagePath = await packageDownloadService.InstallAsync(
+                source,
+                packageVersion,
+                CancellationToken.None
+            );
+            AnsiConsole.MarkupLine(
+                $"[green]Added package:[/] {Markup.Escape(importedPackagePath)}"
+            );
+            return 0;
+        }
 
         if (gitRef is null && IsGitRepositoryUrl(source) && gitReferenceProvider is not null)
         {
@@ -204,6 +221,33 @@ public sealed class CliApplication(
                 >= 2
             && !uri.AbsolutePath.Contains("/tree/", StringComparison.OrdinalIgnoreCase);
     }
+
+    private static bool IsRemotePackageUrl(string input)
+    {
+        if (
+            !Uri.TryCreate(input, UriKind.Absolute, out var uri)
+            || uri.Scheme is not ("http" or "https")
+        )
+        {
+            return false;
+        }
+
+        if (uri.AbsolutePath.EndsWith(".db", StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+
+        var fileName = uri.AbsolutePath.Trim('/').Split('/').LastOrDefault();
+        return fileName is not null
+            && Regex.IsMatch(
+                fileName,
+                @"^[^/]+@v?\d+(?:\.\d+){1,3}$",
+                RegexOptions.CultureInvariant
+            );
+    }
+
+    private static bool IsLocalPackageFile(string input) =>
+        File.Exists(input) && input.EndsWith(".db", StringComparison.OrdinalIgnoreCase);
 
     private async Task<int> RunImportAsync(string[] args)
     {

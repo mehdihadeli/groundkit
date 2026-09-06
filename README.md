@@ -282,9 +282,26 @@ resolve from the local source directory.
 
 **From a website, URL, or package file:**
 
+Many documentation websites publish an [`llms.txt`](https://llmstxt.org/) file
+with AI-ready documentation. GroundKit first checks a website root for
+`/llms-full.txt`, then `/llms.txt`. When `llms.txt` is an index, GroundKit
+follows its Markdown links and fetches the linked documents into the local
+package.
+
+Use a website root for automatic discovery, a direct `llms.txt` URL, or
+`--name` to override the generated package name:
+
 ```bash
+# Auto-fetch llms-full.txt or llms.txt from the website
+groundkit add https://agentgateway.dev
+
+# Add a direct llms.txt URL and follow its linked documents
+groundkit add https://agentgateway.dev/llms.txt
+
+# Use a custom package name
+groundkit add https://agentgateway.dev --name agent-gateway
+
 groundkit --add ./my-project --docs-path docs
-groundkit --add https://docs.example.com
 groundkit --add https://cdn.example.com/react@18.db
 groundkit --add ./react@19.1.0.db
 ```

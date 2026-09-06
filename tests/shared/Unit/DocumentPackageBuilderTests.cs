@@ -131,6 +131,56 @@ public sealed class DocumentPackageBuilderTests : IDisposable
     }
 
     [Fact]
+    public async Task Should_Prefer_Llms_Full_From_Website_Root()
+    {
+        var factory = new TestHttpClientFactory(
+            new Dictionary<string, HttpResponseMessage>
+            {
+                ["https://docs.example.com/llms-full.txt"] = TextResponse(
+                    "# Complete Docs\n\nAll documentation is included here."
+                ),
+                ["https://docs.example.com/llms.txt"] = TextResponse("# Index"),
+            }
+        );
+
+        var result = await CreateBuilder(factory).BuildAsync("https://docs.example.com");
+
+        result.Source.Kind.ShouldBe(SourceKind.LlmsText);
+        result.Documents.ShouldHaveSingleItem();
+        result.Documents[0].Path.ShouldBe("llms-full.txt");
+        result.Documents[0].Title.ShouldBe("Complete Docs");
+        result.Documents[0].Content.ShouldContain("All documentation is included here.");
+    }
+
+    [Fact]
+    public async Task Should_Keep_Linked_Documents_When_One_Link_Fails()
+    {
+        var factory = new TestHttpClientFactory(
+            new Dictionary<string, HttpResponseMessage>
+            {
+                ["https://docs.example.com/llms-full.txt"] = NotFound(),
+                ["https://docs.example.com/llms.txt"] = TextResponse(
+                    "# Docs\n\n[Guide](/guide.md)\n\n[Missing](/missing.md)"
+                ),
+                ["https://docs.example.com/guide.md"] = TextResponse(
+                    "# Guide\n\nInstall and configure."
+                ),
+                ["https://docs.example.com/missing.md"] = NotFound(),
+            }
+        );
+
+        var result = await CreateBuilder(factory).BuildAsync("https://docs.example.com");
+
+        result.Documents.Count.ShouldBe(2);
+        result.Documents.ShouldContain(document => document.Path == "guide.md");
+        result.Documents.ShouldNotContain(document => document.Path == "missing.md");
+        result.Warnings.ShouldContain(warning =>
+            warning.Code == BuildWarningCode.SourceFetchFallback
+            && warning.SourcePath == "https://docs.example.com/missing.md"
+        );
+    }
+
+    [Fact]
     public async Task Should_Extract_Title_Headings_And_Code_From_Raw_Html_Page()
     {
         var factory = new TestHttpClientFactory(

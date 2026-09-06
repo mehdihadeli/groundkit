@@ -35,6 +35,20 @@ groundkit add ./my-library --name my-library --pkg-version 1.0.0 --save ./artifa
 groundkit add https://github.com/mattpocock/skills --tag v1.0.0
 ```
 
+Website documentation can be loaded from an automatically discovered or direct
+`llms.txt` endpoint:
+
+```bash
+# Auto-fetch llms-full.txt or llms.txt
+groundkit add https://agentgateway.dev
+
+# Fetch this llms.txt index and follow its linked documents
+groundkit add https://agentgateway.dev/llms.txt
+
+# Override the generated package name
+groundkit add https://agentgateway.dev --name agent-gateway
+```
+
 For Git repository URLs without `--tag`, GroundKit selects the latest stable tag when tags are available. `--choose-tag` changes this to an interactive selection.
 
 | Command                                                                                  | Purpose                                                                                         |

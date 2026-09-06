@@ -8,6 +8,17 @@ The repository also includes a declarative starter registry in `registry/`. Its 
 
 The builder accepts local directories, Git repositories, `llms.txt` and `llms-full.txt` URLs, and raw documentation pages.
 
+For a website root, GroundKit probes `/llms-full.txt` first and then `/llms.txt`.
+If the available `llms.txt` is an index rather than inlined documentation,
+GroundKit follows its links and fetches the linked documents. A direct
+`llms.txt` URL is also supported:
+
+```bash
+groundkit add https://agentgateway.dev
+groundkit add https://agentgateway.dev/llms.txt
+groundkit add https://agentgateway.dev --name agent-gateway
+```
+
 ### Local directories
 
 When the source is a local directory, GroundKit checks these folders in order:

@@ -104,6 +104,40 @@ public sealed class AddFromDirectoryUnitTests
             );
     }
 
+    [Fact]
+    public async Task Should_Save_Copy_Of_Local_Directory_Package()
+    {
+        var builder = Substitute.For<IDocumentPackageBuilder>();
+        var store = Substitute.For<IPackageStore>();
+        var buildResult = CreateBuildResult();
+        builder
+            .BuildAsync(
+                Arg.Any<string>(),
+                Arg.Any<string?>(),
+                Arg.Any<CancellationToken>(),
+                Arg.Any<string?>(),
+                Arg.Any<string?>(),
+                Arg.Any<string?>()
+            )
+            .Returns(buildResult);
+        store.SaveAsync(Arg.Any<BuildResult>(), Arg.Any<CancellationToken>()).Returns("package.db");
+        store
+            .ExportAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .Returns("./shared/my-library.db");
+
+        var exitCode = await CreateApplication(builder, store)
+            .RunAsync(["add", "./my-lib", "--save", "./shared/my-library.db"]);
+
+        exitCode.ShouldBe(0);
+        await store
+            .Received(1)
+            .ExportAsync(
+                buildResult.Manifest.PackageId,
+                "./shared/my-library.db",
+                Arg.Any<CancellationToken>()
+            );
+    }
+
     private static CliApplication CreateApplication(
         IDocumentPackageBuilder builder,
         IPackageStore store

@@ -58,7 +58,7 @@ public sealed class CliApplication(
         {
             AnsiConsole.Markup("[red]Usage:[/] ");
             AnsiConsole.WriteLine(
-                "add <source> [--path <path>] [--name <name>] [--pkg-version <version>] [--tag <tag>] [--choose-tag]"
+                "add <source> [--path <path>] [--name <name>] [--pkg-version <version>] [--save <path>] [--tag <tag>] [--choose-tag]"
             );
             return 1;
         }
@@ -71,6 +71,7 @@ public sealed class CliApplication(
             ?? catalogEntry?.DocsPath;
         var packageName = TryReadOption(args, "--name");
         var packageVersion = TryReadOption(args, "--pkg-version");
+        var savePath = TryReadOption(args, "--save");
         var gitRef = TryReadOption(args, "--tag");
         var chooseTag = HasFlag(args, "--choose-tag");
 
@@ -104,11 +105,18 @@ public sealed class CliApplication(
             packageName
         );
         var packagePath = await packageStore.SaveAsync(buildResult);
+        var savedCopyPath = savePath is null
+            ? null
+            : await packageStore.ExportAsync(buildResult.Manifest.PackageId, savePath);
 
         AnsiConsole.MarkupLine(
             $"[green]Added package:[/] {Markup.Escape(buildResult.Manifest.PackageId)}"
         );
         AnsiConsole.MarkupLine($"Path: {Markup.Escape(packagePath)}");
+        if (savedCopyPath is not null)
+        {
+            AnsiConsole.MarkupLine($"Saved copy: {Markup.Escape(savedCopyPath)}");
+        }
         AnsiConsole.MarkupLine(
             $"Documents: {buildResult.Manifest.DocumentCount}, Chunks: {buildResult.Manifest.ChunkCount}"
         );
@@ -465,7 +473,7 @@ public sealed class CliApplication(
         AnsiConsole.MarkupLine("Use [aqua]groundkit --command[/] for shorter command syntax.");
         AnsiConsole.MarkupLine("Commands:");
         AnsiConsole.WriteLine(
-            "  add <source> [--path path] [--name name] [--pkg-version version] [--tag tag] [--choose-tag]"
+            "  add <source> [--path path] [--name name] [--pkg-version version] [--save path] [--tag tag] [--choose-tag]"
         );
         AnsiConsole.MarkupLine("  import <package-file>");
         AnsiConsole.MarkupLine("  export <package-id> <destination>");

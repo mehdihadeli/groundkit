@@ -45,6 +45,16 @@ groundkit add ./my-library --name my-library --pkg-version 1.0.0
 
 The custom name is used for package and source identity; the custom version is stored in both package and source metadata and is shown by `inspect`.
 
+Save a portable copy while also installing the package locally:
+
+```bash
+groundkit add ./my-library --path docs --name my-library --pkg-version 1.0.0 --save ./artifacts
+```
+
+`--save` accepts either a destination directory or a `.db` file path. A
+directory receives the normal package filename, making the copy ready for
+sharing or importing on another machine.
+
 During ingestion, GroundKit records source kind, canonical source ID, location, optional version, tag or branch, fingerprint, build timestamps, document counts, chunk counts, and warnings. Use `inspect` to review this provenance.
 
 ## Portable artifacts

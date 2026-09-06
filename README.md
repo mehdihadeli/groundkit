@@ -266,6 +266,16 @@ Set a stable package identity and version while loading the cloned repository:
 groundkit add ./skills --path docs --name mattpocock-skills --pkg-version 1.0.0
 ```
 
+Save an additional copy for sharing while still installing the package locally:
+
+```bash
+groundkit add ./skills --path docs --name mattpocock-skills --pkg-version 1.0.0 \
+  --save ./artifacts/mattpocock-skills@1.0.0.db
+```
+
+`--save` accepts a `.db` file path or a directory. When given a directory,
+GroundKit uses the installed package filename inside that directory.
+
 GroundKit checks local directories for `docs/`, `documentation/`, then `doc/`.
 If none exists, it indexes the source root. Relative paths passed to `--path`
 resolve from the local source directory.

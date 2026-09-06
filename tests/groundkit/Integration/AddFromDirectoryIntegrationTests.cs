@@ -25,7 +25,15 @@ public sealed class AddFromDirectoryIntegrationTests : IDisposable
         _repositoryPath = Path.Combine(_root, "skills");
         _packageRoot = Path.Combine(_root, "packages");
         Directory.CreateDirectory(_root);
-        CloneRepository();
+        try
+        {
+            CloneRepository();
+        }
+        catch
+        {
+            Dispose();
+            throw;
+        }
     }
 
     public void Dispose()
@@ -138,6 +146,33 @@ public sealed class AddFromDirectoryIntegrationTests : IDisposable
         source.Version.ShouldBe("1.0.0");
         package.DocumentCount.ShouldBeGreaterThan(0);
         package.ChunkCount.ShouldBeGreaterThan(0);
+    }
+
+    [Fact]
+    [Trait("Category", "Integration")]
+    public async Task Should_Save_Local_Package_Copy_For_Sharing()
+    {
+        var application = CreateApplication("saved-copy");
+        var savedCopyPath = Path.Combine(_root, "shared", "skills@1.0.0.db");
+
+        var exitCode = await application.RunAsync(
+            [
+                "add",
+                _repositoryPath,
+                "--path",
+                "docs",
+                "--name",
+                "mattpocock-skills",
+                "--pkg-version",
+                "1.0.0",
+                "--save",
+                savedCopyPath,
+            ]
+        );
+
+        exitCode.ShouldBe(0);
+        File.Exists(savedCopyPath).ShouldBeTrue();
+        new FileInfo(savedCopyPath).Length.ShouldBeGreaterThan(0);
     }
 
     private CliApplication CreateApplication(string scenario)

@@ -1,13 +1,13 @@
 ---
 title: Features
 titleTemplate: Local-first documentation workflows
-description: See how DocsContext builds, searches, connects, and shares versioned documentation packages.
+description: See how GroundKit builds, searches, connects, and shares versioned documentation packages.
 ---
 
 <div class="feature-page">
 
 <div class="feature-hero">
-  <div class="feature-eyebrow">DOCSCONTEXT / CAPABILITIES</div>
+  <div class="feature-eyebrow">GROUNDKIT / CAPABILITIES</div>
   <h1>Ground truth for your AI workflow</h1>
   <p class="feature-lede">Versioned documentation packages for agents that need exact APIs, private knowledge, and repeatable evidence.</p>
   <div class="feature-stats">
@@ -37,7 +37,7 @@ description: See how DocsContext builds, searches, connects, and shares versione
   </div>
   <div class="feature-panel">
     <div class="panel-label">BUILD A PACKAGE</div>
-    <div class="feature-code">$ dotnet run --project<br>src/DocsContext.AppHost -- add react<br><br>OK source detected: git<br>OK sections extracted: 1,842<br>OK package: react@19.1.0.db</div>
+    <div class="feature-code">$ dotnet run --project<br>src/groundkit -- add react<br><br>OK source detected: git<br>OK sections extracted: 1,842<br>OK package: react@19.1.0.db</div>
 
   </div>
 </div>
@@ -74,7 +74,7 @@ description: See how DocsContext builds, searches, connects, and shares versione
   </div>
   <div class="feature-panel">
     <div class="panel-label">MCP CONFIGURATION</div>
-    <div class="feature-code">{<br>&nbsp;&nbsp;"servers": {<br>&nbsp;&nbsp;&nbsp;&nbsp;"docs-context": {<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"type": "stdio",<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"command": "dotnet",<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"args": ["run", "--project",<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"src/DocsContext.AppHost", "--", "serve"]<br>&nbsp;&nbsp;&nbsp;&nbsp;}<br>&nbsp;&nbsp;}<br>}</div>
+    <div class="feature-code">{<br>&nbsp;&nbsp;"servers": {<br>&nbsp;&nbsp;&nbsp;&nbsp;"groundkit": {<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"type": "stdio",<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"command": "dotnet",<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"args": ["run", "--project",<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"src/groundkit", "--", "serve"]<br>&nbsp;&nbsp;&nbsp;&nbsp;}<br>&nbsp;&nbsp;}<br>}</div>
   </div>
 </div>
 

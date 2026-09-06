@@ -1,6 +1,6 @@
 # Registry API
 
-DocsContext accepts a small compatible HTTP registry API.
+GroundKit accepts a small compatible HTTP registry API.
 
 ## Search
 
@@ -26,4 +26,15 @@ GET /packages/npm/react/19.1.0
 
 Returns package identity and optional source commit information.
 
-The server may be local, internal, or hosted. Configure its base URL with `DOCSCONTEXT_REGISTRY_URL`.
+The server may be local, internal, or hosted. Configure its base URL with `GROUNDKIT_REGISTRY_URL`.
+
+## Local server
+
+Start the Compose deployment from the repository root:
+
+```bash
+cp .env.example .env
+docker compose up --build
+```
+
+The API listens on `http://localhost:8080` and MinIO listens on `http://localhost:9001`. Set `REGISTRY_PUBLISH_KEY` in `.env` for authenticated package uploads.

@@ -6,7 +6,7 @@ description: Browse the curated library catalog and build local documentation pa
 
 <div class="library-page">
   <div class="library-hero">
-    <div class="library-eyebrow">DOCSCONTEXT / LIBRARY CATALOG</div>
+    <div class="library-eyebrow">GROUNDKIT / LIBRARY CATALOG</div>
     <h1>Start with the docs your stack already uses.</h1>
     <p>Pick a curated source, build one local package, and give your agent version-aware documentation it can inspect.</p>
     <div class="library-actions">

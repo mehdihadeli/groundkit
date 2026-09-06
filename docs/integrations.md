@@ -2,7 +2,7 @@
 
 ## Connect any MCP-compatible host
 
-DocsContext uses the standard stdio transport. The host starts the .NET process and communicates with its discovered tools over stdin and stdout.
+GroundKit uses the standard stdio transport. The host starts the .NET process and communicates with its discovered tools over stdin and stdout.
 
 ## VS Code and Copilot
 
@@ -11,10 +11,10 @@ Add a workspace MCP configuration in `.vscode/mcp.json`:
 ```json
 {
   "servers": {
-    "docs-context": {
+    "groundkit": {
       "type": "stdio",
       "command": "dotnet",
-      "args": ["run", "--project", "src/DocsContext.AppHost", "--", "serve"]
+      "args": ["run", "--project", "src/groundkit", "--", "serve"]
     }
   }
 }
@@ -29,12 +29,12 @@ Most MCP clients accept a JSON server entry. Adapt the command shape to the host
 ```json
 {
   "mcpServers": {
-    "docs-context": {
+    "groundkit": {
       "command": "dotnet",
       "args": [
         "run",
         "--project",
-        "/path/to/DocsContext.AppHost",
+        "/path/to/GroundKit.AppHost",
         "--",
         "serve"
       ]
@@ -43,13 +43,13 @@ Most MCP clients accept a JSON server entry. Adapt the command shape to the host
 }
 ```
 
-On Windows, use an absolute project path with forward or escaped backslashes. A published server can instead use `"command": "docs-context"` and `"args": ["serve"]`.
+On Windows, use an absolute project path with forward or escaped backslashes. A published server can instead use `"command": "groundkit"` and `"args": ["serve"]`.
 
 ## Host-neutral contract
 
 The integration only needs three facts:
 
-- Command: starts the DocsContext MCP server.
+- Command: starts the GroundKit MCP server.
 - Transport: `stdio`.
 - Tools: `resolve-source`, `get_docs`, `library_catalog`, `search_packages`, and `download_package`.
 

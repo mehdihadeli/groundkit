@@ -1,9 +1,11 @@
 import { defineConfig } from "vitepress";
 
 export default defineConfig({
-  title: "DocsContext",
+  title: "GroundKit",
   description: "Local-first documentation grounding for AI agents",
-  base: process.env.GITHUB_ACTIONS ? "/docs-context/" : "/",
+  base: process.env.GITHUB_ACTIONS
+    ? `/${process.env.GITHUB_REPOSITORY?.split("/")[1] ?? "groundkit"}/`
+    : "/",
   cleanUrls: true,
   appearance: true,
   lastUpdated: true,
@@ -62,7 +64,7 @@ export default defineConfig({
     search: { provider: "local" },
     footer: {
       message: "Build once. Query locally. Ground with sources.",
-      copyright: "DocsContext",
+      copyright: "GroundKit",
     },
   },
 });

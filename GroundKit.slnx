@@ -1,0 +1,12 @@
+<Solution>
+	<Folder Name="/src/">
+		<Project Path="src/groundkit/GroundKit.csproj" />
+		<Project Path="src/groundkit-registry/GroundKitRegistry.csproj" />
+		<Project Path="src/shared/GroundKitShared/GroundKitShared.csproj" />
+		<Project Path="src/shared/ServiceDefaults/ServiceDefaults.csproj" />
+	</Folder>
+	<Folder Name="/tests/">
+		<Project Path="tests/groundkit/GroundKit.Tests.csproj" />
+		<Project Path="tests/shared/GroundKitShared.Tests.csproj" />
+	</Folder>
+</Solution>

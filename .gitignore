@@ -263,8 +263,8 @@ history.md
 *.tlb
 *.tli
 history.md
-.docs-context/
-.tmp/docs-context/
+.groundkit/
+.tmp/groundkit/
 packages-cache/
 *.tlh
 *.tmp

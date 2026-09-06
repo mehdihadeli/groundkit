@@ -1,6 +1,6 @@
 # Architecture
 
-DocsContext separates expensive ingestion from the fast retrieval path.
+GroundKit separates expensive ingestion from the fast retrieval path.
 
 ```mermaid
 flowchart LR
@@ -23,6 +23,12 @@ The MCP server opens the selected package, builds an FTS query, ranks matches wi
 
 Queries do not fetch the internet. Registry access is only needed when discovering or downloading a package.
 
+The result includes package identity and version, selected document and section titles, content, token estimates, code presence, and relevance scores. This makes retrieved evidence inspectable by both an MCP client and a human reviewing an agent response.
+
+## Data boundaries
+
+GroundKit is a static documentation grounding layer. It is appropriate for versioned API references, guides, runbooks, and other documents that can be packaged. It is not a source of live operational truth: prices, inventory, feature flags, and service status belong behind a current API or database query.
+
 ## Why SQLite
 
-Library documentation is curated, structured, and queried with concrete API names. Full-text search gives inspectable exact-term matching without embedding generation, vector infrastructure, or a remote query dependency.
+Library documentation is curated, structured, and queried with concrete API names. Full-text search gives inspectable exact-term matching without embedding generation, vector infrastructure, or a remote query dependency. A vector index can be added for a corpus with large scale, weak vocabulary overlap, or unstructured content, but it is not required by this documentation use case.

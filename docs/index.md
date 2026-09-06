@@ -1,10 +1,10 @@
 ---
 layout: home
-title: DocsContext
+title: GroundKit
 titleTemplate: Local-first documentation grounding
 description: Build versioned documentation packages once. Give AI agents precise local context through MCP.
 hero:
-  name: DocsContext
+  name: GroundKit
   text: Documentation that stays close to your code
   tagline: Build versioned docs into portable SQLite packages. Query them through MCP with no cloud dependency on the hot path.
   actions:
@@ -73,6 +73,6 @@ Documentation lookup should disappear into the development loop. Add packages du
 
 ## One server, any MCP client
 
-DocsContext speaks standard stdio MCP. Connect it to your editor or agent host, then use the same package store from interactive sessions and automation.
+GroundKit speaks standard stdio MCP. Connect it to your editor or agent host, then use the same package store from interactive sessions and automation.
 
 [Configure an integration](/integrations) <span class="home-arrow">-></span>

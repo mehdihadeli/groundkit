@@ -28,52 +28,25 @@ jobs:
           global-json-file: global.json
 
       - name: Restore solution
-        run: dotnet restore DocsContext.slnx
+        run: dotnet restore GroundKit.slnx
 
       - name: Build solution
-        run: dotnet build DocsContext.slnx --no-restore --configuration Release
+        run: dotnet build GroundKit.slnx --no-restore --configuration Release
 
       - name: Run tests
-        run: dotnet test DocsContext.slnx --no-build --configuration Release
+        run: dotnet test GroundKit.slnx --no-build --configuration Release
 
       - name: Validate and build registry definitions
-        shell: bash
-        env:
-          DOCSCONTEXT_HOME: ${{ runner.temp }}/docs-context
         run: |
-          set -euo pipefail
-
-          definitions=(registry/*/*.yaml)
-          if [[ ${#definitions[@]} -eq 0 ]]; then
-            echo "No registry definitions found."
-            exit 1
-          fi
-
-          for definition in "${definitions[@]}"; do
-            name="$(awk -F': ' '$1 == "name" { print substr($0, index($0, ": ") + 2); exit }' "$definition")"
-            source_type="$(awk -F': ' '$1 == "  type" { print $2; exit }' "$definition")"
-            url="$(awk -F': ' '$1 == "  url" { print substr($0, index($0, ": ") + 2); exit }' "$definition")"
-            docs_path="$(awk -F': ' '$1 == "  docs_path" { print substr($0, index($0, ": ") + 2); exit }' "$definition")"
-
-            if [[ -z "$name" || -z "$source_type" || -z "$url" || -z "$docs_path" ]]; then
-              echo "Invalid registry definition: $definition"
-              exit 1
-            fi
-
-            if [[ "$source_type" != "git" ]]; then
-              echo "Unsupported registry source type '$source_type' in $definition"
-              exit 1
-            fi
-
-            echo "Building $name from $url (docs path: $docs_path)"
-            dotnet run --project src/DocsContext.AppHost --no-build --configuration Release -- \
-              add "$url" --docs-path "$docs_path"
-          done
+          dotnet run --project src/groundkit-registry --no-build --configuration Release -- \
+            validate --dir registry/packages
+          dotnet run --project src/groundkit-registry --no-build --configuration Release -- \
+            build-all --dir registry/packages --output ./dist-packages
 
       - name: Upload registry packages
         uses: actions/upload-artifact@v7
         with:
-          name: docs-context-registry-${{ github.run_id }}
-          path: ${{ runner.temp }}/docs-context/packages/*.db
+          name: groundkit-registry-${{ github.run_id }}
+          path: ./dist-packages/*.db
           if-no-files-found: error
           retention-days: 14

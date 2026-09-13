@@ -85,7 +85,7 @@ In other words, ingestion happens ahead of time and retrieval happens on demand.
 
 ### Runtime flow
 
-When you run `serve`, the app host starts a stdio MCP server. The MCP registration comes from the `GroundKit.Mcp` assembly, where tool methods are discovered and exposed through the Model Context Protocol server SDK.
+When you run `groundkit-mcp`, the MCP host starts a stdio MCP server. The MCP registration comes from the `GroundKit.Mcp` assembly, where tool methods are discovered and exposed through the Model Context Protocol server SDK.
 
 At runtime the agent talks to GroundKit over stdio, not HTTP. The server does not fetch the internet during the normal query path. It assumes packages have already been built and installed locally under the package store directory.
 
@@ -145,7 +145,7 @@ That means the MCP layer can serve both structured clients and text-oriented age
 You can think of GroundKit as two phases:
 
 1. Offline or pre-query phase: `add` builds a package from git, local docs, `llms.txt`, or a raw page and stores it as a local SQLite `.db` file.
-2. Online query phase: `serve` exposes MCP tools that resolve packages and query those local SQLite packages with no hosted dependency.
+2. Online query phase: `groundkit-mcp` exposes MCP tools that resolve packages and query those local SQLite packages with no hosted dependency.
 
 That is the core architectural idea behind GroundKit: build once, query locally many times.
 
@@ -165,13 +165,13 @@ groundkit --list
 For a locally built package, install from its package directory:
 
 ```powershell
-dotnet pack src/groundkit -c Release
-dotnet tool install --global --add-source ./src/groundkit/bin/Release GroundKit
+dotnet pack src/groundkit-cli -c Release
+dotnet tool install --global --add-source ./src/groundkit-cli/bin/Release GroundKit
 ```
 
 Update a NuGet installation with `dotnet tool update --global GroundKit`.
 Update a local package installation with `dotnet tool update --global
---add-source ./src/groundkit/bin/Release GroundKit`.
+--add-source ./src/groundkit-cli/bin/Release GroundKit`.
 
 Contributors can run the repository wrapper without installing the tool:
 
@@ -450,16 +450,16 @@ groundkit --export react ./artifacts
 
 ### Start MCP servers
 
-- `--serve` starts the MCP server over stdio. It reads only packages already in the local store.
-- `--serve --libs package-a,package-b` restricts the session to selected installed package names.
-- `--serve-http` starts the HTTP MCP host and exposes MCP at `/mcp`. Use `--urls` through the host configuration to select its listening URL.
+- `groundkit-mcp` starts the MCP server over stdio. It reads only packages already in the local store.
+- `groundkit-mcp --libs package-a,package-b` restricts the session to selected installed package names.
+- `groundkit-mcp http --urls http://localhost:3001` starts the HTTP MCP host and exposes MCP at `/mcp`.
 
 Examples:
 
 ```bash
-groundkit --serve
-groundkit --serve --libs react,vite
-groundkit --serve-http --urls http://localhost:3001
+groundkit-mcp
+groundkit-mcp --libs react,vite
+groundkit-mcp http --urls http://localhost:3001
 ```
 
 ### `groundkit --catalog [query]`
@@ -661,7 +661,7 @@ outside a registry API.
 
 ### Registry maintainer commands
 
-`src/groundkit-registry` is separate from the user-facing `src/groundkit` CLI:
+`src/groundkit-registry` is separate from the user-facing `src/groundkit-cli` CLI:
 
 ```bash
 groundkit-registry --list --dir registry

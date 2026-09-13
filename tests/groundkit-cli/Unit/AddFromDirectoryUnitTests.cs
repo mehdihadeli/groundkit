@@ -1,9 +1,6 @@
-using GroundKit.AppHost;
+using GroundKit.Cli;
 using GroundKit.Core.Abstractions;
 using GroundKit.Core.Contracts;
-using GroundKit.Mcp;
-using GroundKit.Mcp.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace GroundKit.Tests.Unit;
 
@@ -143,11 +140,7 @@ public sealed class AddFromDirectoryUnitTests
         IPackageStore store
     )
     {
-        var services = new ServiceCollection();
-        services.AddLogging();
-        services.AddGroundKitMcp();
-        var mcpServer = services.BuildServiceProvider().GetRequiredService<GroundKitMcpServer>();
-        return new CliApplication(builder, store, mcpServer);
+        return new CliApplication(builder, store);
     }
 
     private static BuildResult CreateBuildResult()

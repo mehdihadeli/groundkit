@@ -103,13 +103,13 @@ During ingestion, GroundKit records source kind, canonical source ID, location, 
 Export a package for another machine:
 
 ```bash
-dotnet run --project src/groundkit -- export react ./artifacts
+dotnet run --project src/groundkit-cli -- export react ./artifacts
 ```
 
 Import it into the local store:
 
 ```bash
-dotnet run --project src/groundkit -- import ./artifacts/react@dev.db
+dotnet run --project src/groundkit-cli -- import ./artifacts/react@dev.db
 ```
 
 ## Refresh
@@ -117,7 +117,7 @@ dotnet run --project src/groundkit -- import ./artifacts/react@dev.db
 Refresh from stored source metadata after documentation changes:
 
 ```bash
-dotnet run --project src/groundkit -- refresh react
+dotnet run --project src/groundkit-cli -- refresh react
 ```
 
 Refresh rebuilds the package from its stored source metadata. It does not make a local query live or guarantee that an upstream branch has not changed. For reproducible grounding, prefer an exact Git tag or dependency version, then export the resulting `.db` artifact for teammates or CI.
@@ -125,8 +125,8 @@ Refresh rebuilds the package from its stored source metadata. It does not make a
 ## Evidence workflow
 
 ```bash
-dotnet run --project src/groundkit -- inspect react
-dotnet run --project src/groundkit -- query react "useEffect cleanup"
+dotnet run --project src/groundkit-cli -- inspect react
+dotnet run --project src/groundkit-cli -- query react "useEffect cleanup"
 ```
 
 Check package identity, version, source, and build time before treating a result as authoritative. An empty query result means the package did not provide evidence for that query; it does not prove that the documented feature does not exist.

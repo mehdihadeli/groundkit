@@ -12,7 +12,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\shared\GroundKitShared\GroundKitShared.csproj" />
-    <ProjectReference Include="..\shared\ServiceDefaults\ServiceDefaults.csproj" />
   </ItemGroup>
 
   <ItemGroup>

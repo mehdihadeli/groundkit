@@ -289,7 +289,7 @@ public sealed class RegistryApplication(
     private static IReadOnlyList<RegistryDefinition> Load(string[] args)
     {
         var definitions = RegistryDefinitionLoader.LoadDirectory(
-            Option(args, "--dir") ?? "registry"
+            Option(args, "--dir") ?? "registry/packages"
         );
         RegistryDefinitionLoader.Validate(definitions);
         return definitions;

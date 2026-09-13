@@ -57,14 +57,22 @@ public sealed class DocumentPackageBuilderTests : IDisposable
     }
 
     [Fact]
-    public async Task Should_Reject_Empty_Local_Directory()
+    public async Task Should_Warn_When_Local_Directory_Has_No_Documentation()
     {
         var emptyPath = Path.Combine(_tempRoot, "empty");
         Directory.CreateDirectory(emptyPath);
 
         var builder = CreateBuilder();
 
-        await Should.ThrowAsync<InvalidOperationException>(() => builder.BuildAsync(emptyPath));
+        var result = await builder.BuildAsync(emptyPath);
+
+        result.Manifest.DocumentCount.ShouldBe(0);
+        result.Manifest.ChunkCount.ShouldBe(0);
+        result.Warnings.ShouldContain(warning =>
+            warning.Code == BuildWarningCode.LowSectionCount
+            && warning.Message.Contains("No documentation content was found.")
+            && warning.Message.Contains("https://www.perplexity.ai/search/new?q=")
+        );
     }
 
     [Fact]

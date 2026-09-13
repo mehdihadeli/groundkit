@@ -1,10 +1,7 @@
-using GroundKit.AppHost;
+using GroundKit.Cli;
 using GroundKit.Core.Contracts;
 using GroundKit.Ingestion.Services;
-using GroundKit.Mcp;
-using GroundKit.Mcp.DependencyInjection;
 using GroundKit.Storage.Sqlite;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 
 namespace GroundKit.Tests.Integration;
@@ -122,7 +119,6 @@ public sealed class AddWithGitRepositoryIntegrationTests : IDisposable
                 NullLogger<DocumentPackageBuilder>.Instance
             ),
             CreatePackageStore(scenario),
-            CreateMcpServer(),
             gitReferenceProvider: new GitReferenceProvider()
         );
     }
@@ -141,14 +137,6 @@ public sealed class AddWithGitRepositoryIntegrationTests : IDisposable
         return Directory.Exists(root)
             ? Directory.GetDirectories(root).OrderBy(path => path).ToArray()
             : [];
-    }
-
-    private static GroundKitMcpServer CreateMcpServer()
-    {
-        var services = new ServiceCollection();
-        services.AddLogging();
-        services.AddGroundKitMcp();
-        return services.BuildServiceProvider().GetRequiredService<GroundKitMcpServer>();
     }
 
     private sealed class EmptyHttpClientFactory : IHttpClientFactory

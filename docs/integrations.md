@@ -14,7 +14,7 @@ Add a workspace MCP configuration in `.vscode/mcp.json`:
     "groundkit": {
       "type": "stdio",
       "command": "dotnet",
-      "args": ["run", "--project", "src/groundkit", "--", "serve"]
+      "args": ["run", "--project", "src/groundkit-mcp"]
     }
   }
 }
@@ -31,19 +31,13 @@ Most MCP clients accept a JSON server entry. Adapt the command shape to the host
   "mcpServers": {
     "groundkit": {
       "command": "dotnet",
-      "args": [
-        "run",
-        "--project",
-        "/path/to/GroundKit.AppHost",
-        "--",
-        "serve"
-      ]
+      "args": ["run", "--project", "/path/to/groundkit-mcp"]
     }
   }
 }
 ```
 
-On Windows, use an absolute project path with forward or escaped backslashes. A published server can instead use `"command": "groundkit"` and `"args": ["serve"]`.
+On Windows, use an absolute project path with forward or escaped backslashes. A published server can instead use `"command": "groundkit-mcp"`.
 
 ## Host-neutral contract
 

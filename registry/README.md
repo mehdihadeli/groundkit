@@ -6,20 +6,15 @@ The current .NET application consumes published SQLite packages through the comp
 
 ## Layout
 
-Directory names identify package registries. File names identify package names within a registry:
+Definitions live under the package catalog. File names identify package names:
 
 ```text
-registry/npm/react.yaml -> npm/react
-registry/pip/fastapi.yaml -> pip/fastapi
+registry/packages/react.yaml -> packages/react
+registry/packages/fastapi.yaml -> packages/fastapi
 ```
 
-Scoped npm packages use a subdirectory:
-
-```text
-registry/npm/@trpc/server.yaml -> npm/@trpc/server
-```
-
-The `name` field must match the package name represented by its path.
+The `name` field must match the filename. These are GroundKit documentation
+packages, not npm, pip, or other language-package-manager packages.
 
 ## Definition format
 
@@ -60,14 +55,13 @@ Version discovery and hosted registry publishing are not implemented in this rep
 
 ## Add a definition
 
-1. Choose the distribution registry directory, such as `npm`.
-2. Add `<name>.yaml` and keep its `name` consistent with the path.
-3. Point `docs_path` at the directory containing documentation.
-4. Build the source with the CLI and inspect the result:
+1. Add `registry/packages/<name>.yaml` and keep its `name` consistent with the filename.
+2. Point `docs_path` at the directory containing documentation.
+3. Build the source with the CLI and inspect the result:
 
 ```bash
-dotnet run --project src/DocsContext.AppHost -- add <repository-url> --docs-path <path>
-dotnet run --project src/DocsContext.AppHost -- inspect <package-id>
+dotnet run --project src/groundkit-cli -- add <repository-url> --docs-path <path>
+dotnet run --project src/groundkit-cli -- inspect <package-id>
 ```
 
 A registry builder should reject malformed definitions, missing documentation roots, and definitions that produce empty or suspiciously small packages. CI currently validates required fields and builds every definition; package health thresholds remain future work.

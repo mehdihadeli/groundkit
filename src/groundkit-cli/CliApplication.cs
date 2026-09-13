@@ -2,15 +2,13 @@ using System.Text.RegularExpressions;
 using GroundKit.Core.Abstractions;
 using GroundKit.Core.Contracts;
 using GroundKit.Ingestion.Services;
-using GroundKit.Mcp;
 using Spectre.Console;
 
-namespace GroundKit.AppHost;
+namespace GroundKit.Cli;
 
 public sealed class CliApplication(
     IDocumentPackageBuilder packageBuilder,
     IPackageStore packageStore,
-    GroundKitMcpServer mcpServer,
     IContextRegistryClient? registryClient = null,
     IPackageDownloadService? packageDownloadService = null,
     IGitReferenceProvider? gitReferenceProvider = null
@@ -38,8 +36,6 @@ public sealed class CliApplication(
                 "query" => await RunQueryAsync(args),
                 "refresh" => await RunRefreshAsync(args),
                 "remove" => await RunRemoveAsync(args),
-                "serve" => await RunServeAsync(args),
-                "serve-http" => ShowHttpServeHelp(),
                 "search-packages" => await RunSearchPackagesAsync(args),
                 "download-package" => await RunDownloadPackageAsync(args),
                 "install" => await RunInstallAsync(args),
@@ -398,12 +394,6 @@ public sealed class CliApplication(
         AnsiConsole.MarkupLine(
             $"[green]Removed package files:[/] {Markup.Escape(args[1])} ({removedCount})"
         );
-        return 0;
-    }
-
-    private async Task<int> RunServeAsync(string[] args)
-    {
-        await mcpServer.RunAsync();
         return 0;
     }
 

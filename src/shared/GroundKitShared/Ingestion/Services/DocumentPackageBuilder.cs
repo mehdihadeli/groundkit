@@ -19,7 +19,19 @@ public sealed class DocumentPackageBuilder(
 ) : IDocumentPackageBuilder
 {
     private readonly GroundKitOptions options = options ?? new();
-    private static readonly string[] DefaultDocsFolders = ["docs", "documentation", "doc"];
+    private static readonly string[] DefaultDocsFolders =
+    [
+        "docs",
+        "documentation",
+        "doc",
+        "website/docs",
+        "guides",
+        "guide",
+        "manual",
+        "reference",
+        "content",
+        "wiki",
+    ];
     private static readonly string[] SupportedExtensions =
     [
         ".md",
@@ -172,12 +184,22 @@ public sealed class DocumentPackageBuilder(
                 );
             }
 
-            if (chunks.Count < 3)
+            if (chunks.Count == 0)
             {
                 warnings.Add(
                     new BuildWarning(
                         BuildWarningCode.LowSectionCount,
-                        "Very few sections were indexed. The docs may live in a different repository or subfolder.",
+                        $"No documentation content was found. Search for the appropriate documentation repository: {BuildDocumentationSearchUrl(source)}",
+                        source.Location
+                    )
+                );
+            }
+            else if (chunks.Count < 3)
+            {
+                warnings.Add(
+                    new BuildWarning(
+                        BuildWarningCode.LowSectionCount,
+                        $"Only {chunks.Count} sections were indexed. The docs may live in a different repository or subfolder. Search for the appropriate documentation repository: {BuildDocumentationSearchUrl(source)}",
                         source.Location
                     )
                 );
@@ -283,13 +305,6 @@ public sealed class DocumentPackageBuilder(
     {
         var docsRoot = ResolveDocsRoot(sourceRoot, docsPath, warnings);
         var files = EnumerateDocumentationFiles(docsRoot).ToList();
-
-        if (files.Count == 0)
-        {
-            throw new InvalidOperationException(
-                $"No supported documentation files were found under '{docsRoot}'."
-            );
-        }
 
         var documents = new List<SourceDocumentInput>(files.Count);
         foreach (var file in files)
@@ -423,21 +438,32 @@ public sealed class DocumentPackageBuilder(
             return explicitPath;
         }
 
-        foreach (
-            var candidate in DefaultDocsFolders.Select(folder => Path.Combine(sourceRoot, folder))
-        )
+        var candidates = DefaultDocsFolders
+            .Select((folder, index) => (Path: Path.Combine(sourceRoot, folder), Order: index))
+            .Where(candidate => Directory.Exists(candidate.Path))
+            .Select(candidate =>
+                (
+                    candidate.Path,
+                    candidate.Order,
+                    FileCount: EnumerateDocumentationFiles(candidate.Path).Count()
+                )
+            )
+            .Where(candidate => candidate.FileCount > 0)
+            .OrderByDescending(candidate => candidate.FileCount)
+            .ThenBy(candidate => candidate.Order)
+            .ToList();
+
+        if (candidates.Count > 0)
         {
-            if (Directory.Exists(candidate))
-            {
-                warnings.Add(
-                    new BuildWarning(
-                        BuildWarningCode.DocsPathNotExplicit,
-                        $"Auto-detected docs path '{candidate}'.",
-                        candidate
-                    )
-                );
-                return candidate;
-            }
+            var candidate = candidates[0].Path;
+            warnings.Add(
+                new BuildWarning(
+                    BuildWarningCode.DocsPathNotExplicit,
+                    $"Auto-detected docs path '{candidate}'.",
+                    candidate
+                )
+            );
+            return candidate;
         }
 
         return sourceRoot;
@@ -454,6 +480,12 @@ public sealed class DocumentPackageBuilder(
                 )
             )
             .Where(path => !IsExcludedPath(root, path));
+    }
+
+    private static string BuildDocumentationSearchUrl(DocumentationSource source)
+    {
+        var query = $"{source.DisplayName} documentation repository";
+        return $"https://www.perplexity.ai/search/new?q={Uri.EscapeDataString(query)}";
     }
 
     private static bool IsExcludedPath(string root, string path)

@@ -1,8 +1,6 @@
-using GroundKit.AppHost;
+using GroundKit.Cli;
 using GroundKit.Core.Abstractions;
 using GroundKit.Core.Contracts;
-using GroundKit.Mcp;
-using GroundKit.Mcp.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -47,7 +45,7 @@ public sealed class CliApplicationTests
         var buildResult = CreateBuildResult(source);
         var builder = new RecordingPackageBuilder(buildResult);
         var store = new RecordingPackageStore(source, "C:/packages/docs@dev.db");
-        var application = new CliApplication(builder, store, CreateMcpServer());
+        var application = new CliApplication(builder, store);
 
         var exitCode = await application.RunAsync(["add", "C:/docs"]);
 
@@ -68,12 +66,7 @@ public sealed class CliApplicationTests
         downloader
             .InstallAsync(packageUrl, null, Arg.Any<CancellationToken>())
             .Returns("C:/packages/mattpocock-skills@1.2.3.db");
-        var application = new CliApplication(
-            builder,
-            store,
-            CreateMcpServer(),
-            packageDownloadService: downloader
-        );
+        var application = new CliApplication(builder, store, packageDownloadService: downloader);
 
         var exitCode = await application.RunAsync(["add", packageUrl]);
 
@@ -108,7 +101,6 @@ public sealed class CliApplicationTests
             var application = new CliApplication(
                 builder,
                 store,
-                CreateMcpServer(),
                 packageDownloadService: downloader
             );
 
@@ -140,7 +132,7 @@ public sealed class CliApplicationTests
         var buildResult = CreateBuildResult(source);
         var builder = new RecordingPackageBuilder(buildResult);
         var store = new RecordingPackageStore(source, "C:/packages/docs@dev.db");
-        var application = new CliApplication(builder, store, CreateMcpServer());
+        var application = new CliApplication(builder, store);
 
         var exitCode = await application.RunAsync(["add", "C:/docs", "--docs-path", "src"]);
 
@@ -160,7 +152,7 @@ public sealed class CliApplicationTests
         );
         var builder = new RecordingPackageBuilder(CreateBuildResult(source));
         var store = new RecordingPackageStore(source, "C:/packages/docs@dev.db");
-        var application = new CliApplication(builder, store, CreateMcpServer());
+        var application = new CliApplication(builder, store);
 
         var exitCode = await application.RunAsync(
             ["add", "https://github.com/org/docs", "--tag", "v1.2.3"]
@@ -218,7 +210,7 @@ public sealed class CliApplicationTests
         var buildResult = CreateBuildResult(source);
         var builder = new RecordingPackageBuilder(buildResult);
         var store = new RecordingPackageStore(source, "/tmp/groundkit/groundkit@v1.2.3.db");
-        var application = new CliApplication(builder, store, CreateMcpServer());
+        var application = new CliApplication(builder, store);
 
         var exitCode = await application.RunAsync(["refresh", "groundkit"]);
 
@@ -240,7 +232,7 @@ public sealed class CliApplicationTests
         );
         var builder = new RecordingPackageBuilder(CreateBuildResult(source));
         var store = new RecordingPackageStore(source, "/tmp/groundkit/groundkit@dev.db");
-        var application = new CliApplication(builder, store, CreateMcpServer());
+        var application = new CliApplication(builder, store);
 
         var exitCode = await application.RunAsync(["export", "groundkit", "./artifacts"]);
 
@@ -262,7 +254,7 @@ public sealed class CliApplicationTests
         );
         var builder = new RecordingPackageBuilder(CreateBuildResult(source));
         var store = new RecordingPackageStore(source, "/tmp/groundkit/groundkit@v1.2.3.db");
-        var application = new CliApplication(builder, store, CreateMcpServer());
+        var application = new CliApplication(builder, store);
 
         var exitCode = await application.RunAsync(["inspect", "groundkit"]);
 
@@ -277,17 +269,8 @@ public sealed class CliApplicationTests
         var source = new DocumentationSource(SourceKind.LocalDirectory, "docs", "Docs", "C:/docs");
         return new CliApplication(
             new RecordingPackageBuilder(CreateBuildResult(source)),
-            new RecordingPackageStore(source, "C:/packages/docs@dev.db"),
-            CreateMcpServer()
+            new RecordingPackageStore(source, "C:/packages/docs@dev.db")
         );
-    }
-
-    private static GroundKitMcpServer CreateMcpServer()
-    {
-        var services = new ServiceCollection();
-        services.AddLogging();
-        services.AddGroundKitMcp();
-        return services.BuildServiceProvider().GetRequiredService<GroundKitMcpServer>();
     }
 
     private static BuildResult CreateBuildResult(DocumentationSource source)

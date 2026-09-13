@@ -4,7 +4,7 @@
 
 ## Lifecycle
 
-1. Add one YAML definition under `registry/<ecosystem>/`.
+1. Add one YAML definition under `registry/packages/`.
 2. Validate definitions.
 3. Build packages from Git sources at `latest`, a branch, or an exact tag.
 4. Publish packages to a compatible registry API.
@@ -32,12 +32,12 @@ During development, use `..\groundkit-registry.ps1` from this directory or
 ## Commands
 
 ```bash
-groundkit-registry --list --dir registry
-groundkit-registry --validate --dir registry
-groundkit-registry --build react --dir registry --output ./dist-packages
-groundkit-registry --build react 19.1.0 --dir registry --output ./dist-packages
-groundkit-registry --publish react --dir registry --output ./dist-packages
-groundkit-registry --publish-all --dir registry --output ./dist-packages
+groundkit-registry --list --dir registry/packages
+groundkit-registry --validate --dir registry/packages
+groundkit-registry --build react --dir registry/packages --output ./dist-packages
+groundkit-registry --build react 19.1.0 --dir registry/packages --output ./dist-packages
+groundkit-registry --publish react --dir registry/packages --output ./dist-packages
+groundkit-registry --publish-all --dir registry/packages --output ./dist-packages
 groundkit-registry --bundle --output ./dist-packages --format zip
 groundkit-registry --bundle --output ./dist-packages --format tar.gz
 groundkit-registry --import-bundle ./dist-packages/groundkit-registry.zip --output ./imported-packages
@@ -90,7 +90,7 @@ versions:
     tag: v2.0.0
 ```
 
-The YAML name must match its filename. Registry name comes from the parent directory. Keep source definitions deterministic: pin tags for released packages and use `latest` only for sources without release-aligned documentation.
+The YAML name must match its filename. All definitions use the `packages` catalog. Keep source definitions deterministic: pin tags for released packages and use `latest` only for sources without release-aligned documentation.
 
 ## Publishing target
 

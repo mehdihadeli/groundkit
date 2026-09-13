@@ -3,7 +3,7 @@
 Start the local server:
 
 ```bash
-dotnet run --project src/groundkit -- serve
+dotnet run --project src/groundkit-mcp
 ```
 
 For an installed or published executable, configure an MCP client with:

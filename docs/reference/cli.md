@@ -1,6 +1,6 @@
 # CLI reference
 
-Run commands with `dotnet run --project src/groundkit -- <command>`. After publishing the CLI, replace that prefix with `groundkit`.
+Run commands with `dotnet run --project src/groundkit-cli -- <command>`. After publishing the CLI, replace that prefix with `groundkit`.
 
 ## Add sources
 
@@ -91,7 +91,6 @@ For Git repository URLs without `--tag`, GroundKit selects the latest stable tag
 | `export <package-id> <destination>`                                                      | Copy a package artifact                                                                         |
 | `search-packages <registry> <name> [version]`                                            | Search hosted registry                                                                          |
 | `download-package <registry> <name> <version>`                                           | Download and install package                                                                    |
-| `serve`                                                                                  | Start the stdio MCP server                                                                      |
 | `remove <package-id>`                                                                    | Remove installed package                                                                        |
 
 `install <registry/name|name|source> [version]` resolves a package from the configured registry or catalog, downloads/builds it, and installs it locally. Use `search-packages` to inspect registry versions first.

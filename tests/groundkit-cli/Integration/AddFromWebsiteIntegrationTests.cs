@@ -1,10 +1,7 @@
-using GroundKit.AppHost;
+using GroundKit.Cli;
 using GroundKit.Core.Contracts;
 using GroundKit.Ingestion.Services;
-using GroundKit.Mcp;
-using GroundKit.Mcp.DependencyInjection;
 using GroundKit.Storage.Sqlite;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 
 namespace GroundKit.Tests.Integration;
@@ -170,8 +167,7 @@ public sealed class AddFromWebsiteIntegrationTests : IDisposable
                 new HttpClientFactory(),
                 NullLogger<DocumentPackageBuilder>.Instance
             ),
-            packageStore,
-            CreateMcpServer()
+            packageStore
         );
     }
 
@@ -181,14 +177,6 @@ public sealed class AddFromWebsiteIntegrationTests : IDisposable
             new PackageStoreOptions(Path.Combine(_root, "packages", scenario)),
             NullLogger<SqlitePackageStore>.Instance
         );
-    }
-
-    private static GroundKitMcpServer CreateMcpServer()
-    {
-        var services = new ServiceCollection();
-        services.AddLogging();
-        services.AddGroundKitMcp();
-        return services.BuildServiceProvider().GetRequiredService<GroundKitMcpServer>();
     }
 
     private sealed class HttpClientFactory : IHttpClientFactory

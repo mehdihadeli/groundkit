@@ -51,7 +51,12 @@ public sealed record RegistryVersion(string Version, string? Tag);
 
 public static class RegistryDefinitionLoader
 {
-    public static IReadOnlyList<RegistryDefinition> LoadDirectory(string directory)
+    public const string DefaultRegistry = "packages";
+
+    public static IReadOnlyList<RegistryDefinition> LoadDirectory(
+        string directory,
+        string registry = DefaultRegistry
+    )
     {
         if (!Directory.Exists(directory))
         {
@@ -61,11 +66,11 @@ public static class RegistryDefinitionLoader
         return Directory
             .EnumerateFiles(directory, "*.yaml", SearchOption.AllDirectories)
             .OrderBy(path => path, StringComparer.OrdinalIgnoreCase)
-            .Select(LoadFile)
+            .Select(path => LoadFile(path, registry))
             .ToArray();
     }
 
-    public static RegistryDefinition LoadFile(string path)
+    public static RegistryDefinition LoadFile(string path, string registry = DefaultRegistry)
     {
         using var reader = File.OpenText(path);
         var yaml = new YamlStream();
@@ -75,11 +80,6 @@ public static class RegistryDefinitionLoader
             ?? throw Invalid(path, "root must be a mapping");
 
         var name = Required(root, "name", path);
-        var registry =
-            Path.GetFileName(
-                Path.GetDirectoryName(path)
-                    ?.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)
-            ) ?? throw Invalid(path, "registry directory is missing");
         var description = Optional(root, "description") ?? string.Empty;
         var sourceNode = root.Children.TryGetValue(new YamlScalarNode("source"), out var node)
             ? node as YamlMappingNode
@@ -177,9 +177,9 @@ public static class RegistryDefinitionLoader
             throw Invalid(path, $"unsupported source type '{definition.SourceType}'");
         }
 
-        if (definition.Registry.StartsWith('@') && definition.Registry.Length == 1)
+        if (string.IsNullOrWhiteSpace(definition.Registry))
         {
-            throw Invalid(path, "registry directory is invalid");
+            throw Invalid(path, "registry name is required");
         }
     }
 

@@ -13,33 +13,33 @@ GroundKit turns documentation into local packages and serves those packages to M
 Build documentation from a repository:
 
 ```bash
-dotnet run --project src/groundkit -- add https://github.com/vuejs/docs --docs-path src
+dotnet run --project src/groundkit-cli -- add https://github.com/vuejs/docs --docs-path src
 ```
 
 Local repositories can use automatic docs-folder detection or an explicit path and package metadata:
 
 ```bash
-dotnet run --project src/groundkit -- add ./my-lib --path docs --name my-library --pkg-version 1.0.0
+dotnet run --project src/groundkit-cli -- add ./my-lib --path docs --name my-library --pkg-version 1.0.0
 ```
 
 For Git sources, pin a tag for reproducible packages:
 
 ```bash
-dotnet run --project src/groundkit -- add https://github.com/mattpocock/skills --tag main
+dotnet run --project src/groundkit-cli -- add https://github.com/mattpocock/skills --tag main
 ```
 
 Build one of the curated sources by name:
 
 ```bash
-dotnet run --project src/groundkit -- catalog
-dotnet run --project src/groundkit -- add react
+dotnet run --project src/groundkit-cli -- catalog
+dotnet run --project src/groundkit-cli -- add react
 ```
 
 ## Query it
 
 ```bash
-dotnet run --project src/groundkit -- list
-dotnet run --project src/groundkit -- query react "useEffect cleanup"
+dotnet run --project src/groundkit-cli -- list
+dotnet run --project src/groundkit-cli -- query react "useEffect cleanup"
 ```
 
 Packages live under `.groundkit/packages` by default. Set `GROUNDKIT_HOME` to move that store.
@@ -47,13 +47,13 @@ Packages live under `.groundkit/packages` by default. Set `GROUNDKIT_HOME` to mo
 Inspect package provenance before querying it:
 
 ```bash
-dotnet run --project src/groundkit -- inspect my-library
+dotnet run --project src/groundkit-cli -- inspect my-library
 ```
 
 ## Start MCP
 
 ```bash
-dotnet run --project src/groundkit -- serve
+dotnet run --project src/groundkit-mcp
 ```
 
 The server uses stdio transport. Add it to your agent configuration using the command and arguments shown in [MCP setup](/guide/mcp).

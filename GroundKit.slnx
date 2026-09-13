@@ -1,12 +1,19 @@
 <Solution>
 	<Folder Name="/src/">
-		<Project Path="src/groundkit/GroundKit.csproj" />
-		<Project Path="src/groundkit-registry/GroundKitRegistry.csproj" />
+		<Project Path="src/groundkit-cli/GroundKit.Cli.csproj" />
+		<Project Path="src/groundkit-mcp/GroundKit.Mcp.csproj" />
+		<Project Path="src/groundkit-registry/GroundKit.Registry.csproj" />
 		<Project Path="src/shared/GroundKitShared/GroundKitShared.csproj" />
 		<Project Path="src/shared/ServiceDefaults/ServiceDefaults.csproj" />
 	</Folder>
+	<Folder Name="/src/groundkit-mcp/" />
+	<Folder Name="/src/shared/" />
 	<Folder Name="/tests/">
-		<Project Path="tests/groundkit/GroundKit.Tests.csproj" />
+		<Project Path="tests/groundkit-cli/GroundKit.Cli.Tests.csproj" />
 		<Project Path="tests/shared/GroundKitShared.Tests.csproj" />
+		<Project Path="tests/groundkit-registry/GroundKit.Registry.Tests.csproj" />
+	</Folder>
+	<Folder Name="/tests/groundkit-mcp/">
+		<Project Path="tests/groundkit-mcp/GroundKit.Mcp.Tests.csproj" />
 	</Folder>
 </Solution>

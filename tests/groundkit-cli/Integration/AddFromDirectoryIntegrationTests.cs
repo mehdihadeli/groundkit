@@ -2,14 +2,11 @@ using System.Diagnostics;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
-using GroundKit.AppHost;
+using GroundKit.Cli;
 using GroundKit.Configuration;
 using GroundKit.Core.Contracts;
 using GroundKit.Ingestion.Services;
-using GroundKit.Mcp;
-using GroundKit.Mcp.DependencyInjection;
 using GroundKit.Storage.Sqlite;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 
 namespace GroundKit.Tests.Integration;
@@ -220,7 +217,6 @@ public sealed class AddFromDirectoryIntegrationTests : IDisposable
         var destinationApplication = new CliApplication(
             destinationBuilder,
             destinationStore,
-            CreateMcpServer(),
             packageDownloadService: downloader
         );
 
@@ -278,7 +274,6 @@ public sealed class AddFromDirectoryIntegrationTests : IDisposable
         var destinationApplication = new CliApplication(
             destinationBuilder,
             destinationStore,
-            CreateMcpServer(),
             packageDownloadService: downloader
         );
         var servingTask = server.ServeOnceAsync(TestContext.Current.CancellationToken);
@@ -305,8 +300,7 @@ public sealed class AddFromDirectoryIntegrationTests : IDisposable
                 new EmptyHttpClientFactory(),
                 NullLogger<DocumentPackageBuilder>.Instance
             ),
-            CreatePackageStore(scenario),
-            CreateMcpServer()
+            CreatePackageStore(scenario)
         );
     }
 
@@ -344,14 +338,6 @@ public sealed class AddFromDirectoryIntegrationTests : IDisposable
             var error = process.StandardError.ReadToEnd();
             throw new InvalidOperationException($"Could not clone test repository: {error}");
         }
-    }
-
-    private static GroundKitMcpServer CreateMcpServer()
-    {
-        var services = new ServiceCollection();
-        services.AddLogging();
-        services.AddGroundKitMcp();
-        return services.BuildServiceProvider().GetRequiredService<GroundKitMcpServer>();
     }
 
     private sealed class EmptyHttpClientFactory : IHttpClientFactory

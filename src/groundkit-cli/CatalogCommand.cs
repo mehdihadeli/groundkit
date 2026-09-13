@@ -2,7 +2,7 @@ using GroundKit.Core.Contracts;
 using Spectre.Console;
 using Spectre.Console.Cli;
 
-namespace GroundKit.AppHost;
+namespace GroundKit.Cli;
 
 public sealed class CatalogCommand : Command<CatalogCommand.Settings>
 {

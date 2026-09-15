@@ -12,11 +12,27 @@
 
 ## Install
 
+Run the maintainer CLI with `groundkit-registry <command>`.
+
+During development, this repository includes repo-local `groundkit-registry`
+launchers in the repository root. Add the repository root to `PATH` once per
+shell session, then use the same command shown below:
+
+```bash
+export PATH="$PWD/../..:$PATH"
+groundkit-registry list --dir registry/packages
+```
+
+```powershell
+$env:Path = "$(Resolve-Path ../..);$env:Path"
+groundkit-registry list --dir registry/packages
+```
+
 Install the published maintainer tool from NuGet:
 
 ```powershell
 dotnet tool install --global GroundKit.Registry
-groundkit-registry --list
+groundkit-registry list
 ```
 
 For a locally built package:
@@ -26,25 +42,22 @@ dotnet pack src/groundkit-registry -c Release
 dotnet tool install --global --add-source ./src/groundkit-registry/bin/Release GroundKit.Registry
 ```
 
-During development, use `..\groundkit-registry.ps1` from this directory or
-`.\groundkit-registry.ps1` from the repository root.
+Flag-style forms remain aliases, but this README uses the positional command
+form consistently.
 
 ## Commands
 
 ```bash
-groundkit-registry --list --dir registry/packages
-groundkit-registry --validate --dir registry/packages
-groundkit-registry --build react --dir registry/packages --output ./dist-packages
-groundkit-registry --build react 19.1.0 --dir registry/packages --output ./dist-packages
-groundkit-registry --publish react --dir registry/packages --output ./dist-packages
-groundkit-registry --publish-all --dir registry/packages --output ./dist-packages
-groundkit-registry --bundle --output ./dist-packages --format zip
-groundkit-registry --bundle --output ./dist-packages --format tar.gz
-groundkit-registry --import-bundle ./dist-packages/groundkit-registry.zip --output ./imported-packages
+groundkit-registry list --dir registry/packages
+groundkit-registry validate --dir registry/packages
+groundkit-registry build react --dir registry/packages --output ./dist-packages
+groundkit-registry build react 19.1.0 --dir registry/packages --output ./dist-packages
+groundkit-registry publish react --dir registry/packages --output ./dist-packages
+groundkit-registry publish-all --dir registry/packages --output ./dist-packages
+groundkit-registry bundle --output ./dist-packages --format zip
+groundkit-registry bundle --output ./dist-packages --format tar.gz
+groundkit-registry import-bundle ./dist-packages/groundkit-registry.zip --output ./imported-packages
 ```
-
-Flag-style forms are aliases; positional forms such as
-`groundkit-registry list --dir registry` remain supported.
 
 `publish` skips an existing `registry/name/version`. `publish-all` processes every definition and version, continues after individual failures, and exits nonzero when any package fails.
 

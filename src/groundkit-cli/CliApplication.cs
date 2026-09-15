@@ -131,7 +131,7 @@ public sealed class CliApplication(
             AnsiConsole.MarkupLine($"Saved copy: {Markup.Escape(savedCopyPath)}");
         }
         AnsiConsole.MarkupLine(
-            $"Documents: {buildResult.Manifest.DocumentCount}, Chunks: {buildResult.Manifest.ChunkCount}"
+            $"Documents: {buildResult.Manifest.DocumentCount}, Sections: {buildResult.Manifest.ChunkCount}"
         );
 
         if (buildResult.Warnings.Count > 0)
@@ -157,32 +157,61 @@ public sealed class CliApplication(
             return 0;
         }
 
+        var packageRows = packages
+            .Select(package =>
+            {
+                var packageSizeBytes = File.Exists(package.PackagePath)
+                    ? new FileInfo(package.PackagePath).Length
+                    : 0;
+                return new
+                {
+                    Package = package,
+                    SizeBytes = packageSizeBytes,
+                    SizeLabel = packageSizeBytes > 0 ? FormatBytes(packageSizeBytes) : "unknown",
+                };
+            })
+            .ToArray();
+
         var table = new Table
         {
-            Title = new TableTitle("Installed packages"),
+            Title = new TableTitle("[aqua]Installed packages[/]"),
             Border = TableBorder.Rounded,
+            Expand = true,
         };
-        table.AddColumn("Package");
-        table.AddColumn("Version");
-        table.AddColumn("Size");
-        table.AddColumn("Documents");
-        table.AddColumn("Chunks");
+        table.AddColumn(new TableColumn("[grey]Package[/]"));
+        table.AddColumn(new TableColumn("[grey]Version[/]"));
+        table.AddColumn(new TableColumn("[grey]Size[/]").RightAligned());
+        table.AddColumn(new TableColumn("[grey]Documents[/]").RightAligned());
+        table.AddColumn(new TableColumn("[grey]Sections[/]").RightAligned());
 
-        foreach (var package in packages)
+        foreach (var row in packageRows)
         {
-            var size = File.Exists(package.PackagePath)
-                ? FormatBytes(new FileInfo(package.PackagePath).Length)
-                : "unknown size";
             table.AddRow(
-                Markup.Escape(package.PackageId),
-                Markup.Escape(package.Version ?? "dev"),
-                size,
-                $"{package.DocumentCount:N0}",
-                $"{package.ChunkCount:N0}"
+                $"[white]{Markup.Escape(row.Package.PackageId)}[/]",
+                Markup.Escape(row.Package.Version ?? "dev"),
+                row.SizeLabel,
+                $"{row.Package.DocumentCount:N0}",
+                $"{row.Package.ChunkCount:N0}"
             );
         }
 
         AnsiConsole.Write(table);
+
+        var totalBytes = packageRows.Sum(row => row.SizeBytes);
+        var totalDocuments = packageRows.Sum(row => row.Package.DocumentCount);
+        var totalSections = packageRows.Sum(row => row.Package.ChunkCount);
+        var summary = new Grid();
+        summary.AddColumn();
+        summary.AddColumn();
+        summary.AddRow("Packages", packages.Count.ToString("N0"));
+        summary.AddRow("Size", totalBytes > 0 ? FormatBytes(totalBytes) : "unknown");
+        summary.AddRow("Documents", totalDocuments.ToString("N0"));
+        summary.AddRow("Sections", totalSections.ToString("N0"));
+
+        AnsiConsole.Write(
+            new Panel(summary).Header("[grey]Totals[/]").Border(BoxBorder.Rounded).Expand()
+        );
+
         return 0;
     }
 
@@ -371,7 +400,7 @@ public sealed class CliApplication(
         );
         AnsiConsole.MarkupLine($"Path: {Markup.Escape(packagePath)}");
         AnsiConsole.MarkupLine(
-            $"Documents: {buildResult.Manifest.DocumentCount}, Chunks: {buildResult.Manifest.ChunkCount}"
+            $"Documents: {buildResult.Manifest.DocumentCount}, Sections: {buildResult.Manifest.ChunkCount}"
         );
         return 0;
     }

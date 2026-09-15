@@ -60,8 +60,8 @@ Version discovery and hosted registry publishing are not implemented in this rep
 3. Build the source with the CLI and inspect the result:
 
 ```bash
-dotnet run --project src/groundkit-cli -- add <repository-url> --docs-path <path>
-dotnet run --project src/groundkit-cli -- inspect <package-id>
+groundkit add <repository-url> --docs-path <path>
+groundkit inspect <package-id>
 ```
 
 A registry builder should reject malformed definitions, missing documentation roots, and definitions that produce empty or suspiciously small packages. CI currently validates required fields and builds every definition; package health thresholds remain future work.

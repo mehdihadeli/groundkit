@@ -1,3 +1,4 @@
+# Repo-local development launcher for the GroundKit registry maintainer CLI.
 param(
     [Parameter(ValueFromRemainingArguments = $true)]
     [string[]] $GroundKitRegistryArgs

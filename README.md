@@ -151,15 +151,31 @@ That is the core architectural idea behind GroundKit: build once, query locally 
 
 ## CLI reference
 
-GroundKit is consumed as a .NET tool. After installation, run commands with
-`groundkit --<command>`. Running GroundKit without a command prints the command
-list.
+Run GroundKit with `groundkit <command>`.
+
+During development, this repository includes local `groundkit` wrappers in the
+repository root. Add the repository root to `PATH` once per shell session, then
+use the same `groundkit` command shown throughout this README and the docs.
+
+```bash
+export PATH="$PWD:$PATH"
+groundkit list
+```
+
+```powershell
+$env:Path = "$PWD;$env:Path"
+groundkit list
+```
+
+After publishing or installing the .NET tool, the same command name resolves to
+the installed tool instead of the repository wrapper. Running GroundKit without
+a command prints the command list.
 
 Install GroundKit as a global .NET tool:
 
 ```powershell
 dotnet tool install --global GroundKit
-groundkit --list
+groundkit list
 ```
 
 For a locally built package, install from its package directory:
@@ -173,25 +189,14 @@ Update a NuGet installation with `dotnet tool update --global GroundKit`.
 Update a local package installation with `dotnet tool update --global
 --add-source ./src/groundkit-cli/bin/Release GroundKit`.
 
-Contributors can run the repository wrapper without installing the tool:
-
 ```powershell
-.\groundkit.ps1 --list
-.\groundkit.ps1 --query skills "hooks"
+groundkit list
+groundkit inspect react
+groundkit query react "useEffect cleanup"
 ```
 
-PowerShell does not search the current directory for commands, so use the
-`.\groundkit.ps1` prefix. Bare `groundkit --list` requires the installed tool
-directory to be on `PATH`.
-
-```powershell
-groundkit --list
-groundkit --inspect react
-groundkit --query react "useEffect cleanup"
-```
-
-Flag-style forms are aliases; existing positional forms such as `groundkit list`
-continue to work.
+Flag-style forms remain aliases, but this README uses the positional command
+form consistently.
 
 ### `groundkit add <source>`
 
@@ -206,8 +211,8 @@ The flag form, `groundkit --add <source>`, is also supported.
 **From the starter catalog:**
 
 ```bash
-groundkit --add react
-groundkit --catalog react
+groundkit add react
+groundkit catalog react
 ```
 
 **From a git repository:**
@@ -276,9 +281,17 @@ groundkit add ./skills --path docs --name mattpocock-skills --pkg-version 1.0.0 
 `--save` accepts a `.db` file path or a directory. When given a directory,
 GroundKit uses the installed package filename inside that directory.
 
-GroundKit checks local directories for `docs/`, `documentation/`, then `doc/`.
-If none exists, it indexes the source root. Relative paths passed to `--path`
-resolve from the local source directory.
+GroundKit checks `docs/`, `documentation/`, `doc/`, `website/docs/`, `guides/`,
+`guide/`, `manual/`, `reference/`, `content/`, and `wiki/`, selecting the one
+with the most supported documentation files. If none contains supported files,
+it indexes the source root. Relative paths passed to `--path` resolve from the
+local source directory.
+
+If the source contains no supported documentation files, `add` still creates a
+package but prints a warning saying that no documentation content was found.
+The warning includes a Perplexity search link for finding the appropriate
+documentation repository. A small package also receives a warning with the
+same search suggestion because many projects keep docs in a separate repository.
 
 **From a website, URL, or package file:**
 
@@ -315,9 +328,9 @@ groundkit add https://github.com/agentgateway/agentgateway/blob/main/README.md -
 **From a package file:**
 
 ```bash
-groundkit --add ./my-project --docs-path docs
-groundkit --add https://cdn.example.com/react@18.db
-groundkit --add ./react@19.1.0.db
+groundkit add ./my-project --docs-path docs
+groundkit add https://cdn.example.com/react@18.db
+groundkit add ./react@19.1.0.db
 ```
 
 **From a local saved database:**
@@ -357,8 +370,8 @@ stores an explicit package and source version.
 To import an existing local or remote `.db` package, use `install`:
 
 ```bash
-groundkit --install ./react@19.1.0.db
-groundkit --install https://example.com/react@19.1.0.db
+groundkit install ./react@19.1.0.db
+groundkit install https://example.com/react@19.1.0.db
 ```
 
 For a website root, `add` first probes `/llms-full.txt` and `/llms.txt`. If
@@ -382,16 +395,16 @@ Install with local-first resolution. This is the fallback-capable workflow:
 
 ```bash
 # Search registry only when no matching local package exists
-groundkit --install npm/react
+groundkit install npm/react
 
 # Request exact version
-groundkit --install npm/react 19.1.0
+groundkit install npm/react 19.1.0
 
 # Bare names default to npm
-groundkit --install react
+groundkit install react
 
 # Missing registry package falls back to local catalog/source build
-groundkit --install react 19.1.0
+groundkit install react 19.1.0
 ```
 
 Resolution order:
@@ -400,38 +413,38 @@ Resolution order:
 2. Search configured registry and import matching `.db` artifact.
 3. If registry has no match or is unavailable, build from the catalog or source locally.
 
-### `groundkit --search-packages <registry> <name> [version]`
+### `groundkit search-packages <registry> <name> [version]`
 
 Search registry metadata and versions. Search is read-only: it never downloads
 or installs a package.
 
 ```bash
-groundkit --search-packages npm react
-groundkit --search-packages npm react 19.1.0
-groundkit --search-packages pip django
+groundkit search-packages npm react
+groundkit search-packages npm react 19.1.0
+groundkit search-packages pip django
 ```
 
-### `groundkit --download-package <registry> <name> <version>`
+### `groundkit download-package <registry> <name> <version>`
 
 Download one exact pre-built registry package. This is strict and does not
 fallback to another version or local build when the artifact is unavailable.
 
 ```bash
-groundkit --download-package npm react 19.1.0
+groundkit download-package npm react 19.1.0
 ```
 
 Use `install` instead when registry failure should trigger local fallback.
 
-### `groundkit --import <package-file>` and `groundkit --export <package-id> <destination>`
+### `groundkit import <package-file>` and `groundkit export <package-id> <destination>`
 
 Import or share portable SQLite package artifacts without rebuilding:
 
 ```bash
-groundkit --import ./artifacts/react@19.1.0.db
-groundkit --export react ./artifacts
+groundkit import ./artifacts/react@19.1.0.db
+groundkit export react ./artifacts
 ```
 
-### `groundkit --list`, `--inspect`, `--query`, `--refresh`, and `--remove`
+### `groundkit list`, `inspect`, `query`, `refresh`, and `remove`
 
 - `--list` displays installed package ids, versions, document counts, chunk counts, and build times.
 - `--inspect <package-id>` displays package metadata, source information, and local database path.
@@ -442,10 +455,10 @@ groundkit --export react ./artifacts
 Examples:
 
 ```bash
-groundkit --list
-groundkit --inspect react
-groundkit --query react "useEffect cleanup"
-groundkit --export react ./artifacts
+groundkit list
+groundkit inspect react
+groundkit query react "useEffect cleanup"
+groundkit export react ./artifacts
 ```
 
 ### Start MCP servers
@@ -462,20 +475,20 @@ groundkit-mcp --libs react,vite
 groundkit-mcp http --urls http://localhost:3001
 ```
 
-### `groundkit --catalog [query]`
+### `groundkit catalog [query]`
 
 List the initial curated sources:
 
 ```bash
-groundkit --catalog
-groundkit --catalog react
+groundkit catalog
+groundkit catalog react
 ```
 
 Catalog names can be passed directly to `--add`. GroundKit expands them to their
 known repository and documentation path before building a local package:
 
 ```bash
-groundkit --add react
+groundkit add react
 ```
 
 The MCP server exposes `library_catalog` for discovery and `get_docs` as the
@@ -508,15 +521,15 @@ Examples for each workflow:
 
 ```bash
 # 1. Search, review versions, then choose one
-groundkit --search-packages npm next
-groundkit --download-package npm next 15.5.0
+groundkit search-packages npm next
+groundkit download-package npm next 15.5.0
 
 # 2. Install one exact artifact without discovery
-groundkit --download-package npm react 19.1.0
+groundkit download-package npm react 19.1.0
 
 # 3. Let local-first install resolve registry or local fallback
-groundkit --install npm/vite
-groundkit --install react 19.1.0
+groundkit install npm/vite
+groundkit install react 19.1.0
 ```
 
 For `install`, resolution order is:
@@ -544,7 +557,7 @@ Or override it for one shell/session with `GROUNDKIT_REGISTRY_URL`:
 
 ```powershell
 $env:GROUNDKIT_REGISTRY_URL = "https://registry.example.com"
-groundkit --search-packages npm react
+groundkit search-packages npm react
 ```
 
 Environment variables take precedence over `.groundkit/config.json`. Copy
@@ -594,19 +607,19 @@ The registry maintainer CLI builds packages and creates a bundle containing all
 `.db` files, `index.json`, and `SHA256SUMS`:
 
 ```bash
-groundkit-registry --validate --dir registry
-groundkit-registry --build-all --dir registry --output ./dist-packages
-groundkit-registry --bundle --output ./dist-packages --format zip
-groundkit-registry --bundle --output ./dist-packages --format tar.gz
+groundkit-registry validate --dir registry
+groundkit-registry build-all --dir registry --output ./dist-packages
+groundkit-registry bundle --output ./dist-packages --format zip
+groundkit-registry bundle --output ./dist-packages --format tar.gz
 ```
 
 Import a bundle on an offline machine, then query or serve the imported packages:
 
 ```bash
-groundkit-registry --import-bundle \
+groundkit-registry import-bundle \
    ./dist-packages/groundkit-registry.zip --output ./imported-packages
-groundkit --import ./imported-packages/react@19.1.0.db
-groundkit --list
+groundkit import ./imported-packages/react@19.1.0.db
+groundkit list
 ```
 
 The bundle is a distribution artifact, not a live registry. It does not enable
@@ -625,7 +638,7 @@ Download that artifact from GitHub Actions or with GitHub CLI:
 ```bash
 gh run list --workflow registry-update.yml
 gh run download <run-id> --name groundkit-registry-<run-id> --dir ./registry-download
-groundkit --import ./registry-download/react@19.1.0.db
+groundkit import ./registry-download/react@19.1.0.db
 ```
 
 GitHub Actions artifacts are suitable for CI handoff and short-lived builds.
@@ -643,7 +656,7 @@ artifacts directly.
 ```bash
 oras login ghcr.io -u USERNAME --password-stdin
 oras pull ghcr.io/OWNER/groundkit-packages:react--19.1.0-<commit12>
-groundkit --import ./react--19.1.0-<commit12>.db
+groundkit import ./react--19.1.0-<commit12>.db
 ```
 
 The workflow uses an immutable tag containing the package name/version and the
@@ -664,12 +677,12 @@ outside a registry API.
 `src/groundkit-registry` is separate from the user-facing `src/groundkit-cli` CLI:
 
 ```bash
-groundkit-registry --list --dir registry
-groundkit-registry --validate --dir registry
-groundkit-registry --build react --dir registry --output ./dist-packages
-groundkit-registry --build react 19.1.0 --dir registry --output ./dist-packages
-groundkit-registry --publish react --dir registry --output ./dist-packages
-groundkit-registry --publish-all --dir registry --output ./dist-packages
+groundkit-registry list --dir registry
+groundkit-registry validate --dir registry
+groundkit-registry build react --dir registry --output ./dist-packages
+groundkit-registry build react 19.1.0 --dir registry --output ./dist-packages
+groundkit-registry publish react --dir registry --output ./dist-packages
+groundkit-registry publish-all --dir registry --output ./dist-packages
 ```
 
 Set `REGISTRY_SERVER_URL` and `REGISTRY_PUBLISH_KEY` when publishing to an

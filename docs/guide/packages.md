@@ -36,8 +36,17 @@ When the source is a local directory, GroundKit checks these folders in order:
 1. `docs/`
 2. `documentation/`
 3. `doc/`
+4. `website/docs/`
+5. `guides/`
+6. `guide/`
+7. `manual/`
+8. `reference/`
+9. `content/`
+10. `wiki/`
 
-If none exists, it scans the repository root. Set `--path` when documentation lives elsewhere:
+GroundKit selects the candidate containing the most supported documentation
+files. If none contains documentation, it scans the repository root. Set
+`--path` when documentation lives elsewhere:
 
 ```bash
 groundkit add ./my-library
@@ -45,6 +54,12 @@ groundkit add ./my-library --path handbook
 ```
 
 `--docs-path` remains available as an alias for `--path`. Relative paths resolve from the source directory; absolute paths are also supported.
+
+If no supported documentation files are found, `add` creates the package with
+zero documents and prints a warning containing a Perplexity search link. A
+small package also receives a warning with the same suggestion because the
+project may keep documentation in a separate repository, such as a
+`project-docs`, `project.dev`, or `project-website` repository.
 
 ### Git repositories
 
@@ -103,13 +118,13 @@ During ingestion, GroundKit records source kind, canonical source ID, location, 
 Export a package for another machine:
 
 ```bash
-dotnet run --project src/groundkit-cli -- export react ./artifacts
+groundkit export react ./artifacts
 ```
 
 Import it into the local store:
 
 ```bash
-dotnet run --project src/groundkit-cli -- import ./artifacts/react@dev.db
+groundkit import ./artifacts/react@dev.db
 ```
 
 ## Refresh
@@ -117,7 +132,7 @@ dotnet run --project src/groundkit-cli -- import ./artifacts/react@dev.db
 Refresh from stored source metadata after documentation changes:
 
 ```bash
-dotnet run --project src/groundkit-cli -- refresh react
+groundkit refresh react
 ```
 
 Refresh rebuilds the package from its stored source metadata. It does not make a local query live or guarantee that an upstream branch has not changed. For reproducible grounding, prefer an exact Git tag or dependency version, then export the resulting `.db` artifact for teammates or CI.
@@ -125,8 +140,8 @@ Refresh rebuilds the package from its stored source metadata. It does not make a
 ## Evidence workflow
 
 ```bash
-dotnet run --project src/groundkit-cli -- inspect react
-dotnet run --project src/groundkit-cli -- query react "useEffect cleanup"
+groundkit inspect react
+groundkit query react "useEffect cleanup"
 ```
 
 Check package identity, version, source, and build time before treating a result as authoritative. An empty query result means the package did not provide evidence for that query; it does not prove that the documented feature does not exist.

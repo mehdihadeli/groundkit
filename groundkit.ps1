@@ -1,3 +1,4 @@
+# Repo-local development launcher for the GroundKit CLI.
 param(
     [Parameter(ValueFromRemainingArguments = $true)]
     [string[]] $GroundKitArgs

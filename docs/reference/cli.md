@@ -1,6 +1,20 @@
 # CLI reference
 
-Run commands with `dotnet run --project src/groundkit-cli -- <command>`. After publishing the CLI, replace that prefix with `groundkit`.
+Run commands with `groundkit <command>`.
+
+During development, this repository ships repo-local `groundkit` launchers.
+Add the repository root to `PATH` once per shell session so the examples below
+run against the current source tree:
+
+```bash
+export PATH="$PWD:$PATH"
+groundkit list
+```
+
+```powershell
+$env:Path = "$PWD;$env:Path"
+groundkit list
+```
 
 ## Add sources
 
@@ -19,7 +33,7 @@ Run commands with `dotnet run --project src/groundkit-cli -- <command>`. After p
 Examples:
 
 ```bash
-# Detect docs/, documentation/, or doc/ automatically
+# Detect common documentation folders automatically
 groundkit add ./my-library
 
 # Use an explicit documentation directory
@@ -79,20 +93,37 @@ groundkit add ./mattpocock-skills@1.2.3.db
 
 For Git repository URLs without `--tag`, GroundKit selects the latest stable tag when tags are available. `--choose-tag` changes this to an interactive selection.
 
-| Command                                                                                  | Purpose                                                                                         |
-| ---------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
-| `add <source> [--path <path>] [--name <name>] [--pkg-version <version>] [--save <path>]` | Build and install a package; local directories auto-detect `docs/`, `documentation/`, or `doc/` |
-| `catalog [query]`                                                                        | Browse curated sources                                                                          |
-| `list`                                                                                   | List installed packages                                                                         |
-| `query <package-id> <topic>`                                                             | Search local documentation                                                                      |
-| `inspect <package-id>`                                                                   | Inspect package and source metadata                                                             |
-| `refresh <package-id>`                                                                   | Rebuild from stored source metadata                                                             |
-| `import <package-file>`                                                                  | Install a SQLite package                                                                        |
-| `export <package-id> <destination>`                                                      | Copy a package artifact                                                                         |
-| `search-packages <registry> <name> [version]`                                            | Search hosted registry                                                                          |
-| `download-package <registry> <name> <version>`                                           | Download and install package                                                                    |
-| `remove <package-id>`                                                                    | Remove installed package                                                                        |
+| Command                                                                                  | Purpose                                                                                  |
+| ---------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| `add <source> [--path <path>] [--name <name>] [--pkg-version <version>] [--save <path>]` | Build and install a package; local directories auto-detect the documented common folders |
+| `catalog [query]`                                                                        | Browse curated sources                                                                   |
+| `list`                                                                                   | List installed packages                                                                  |
+| `query <package-id> <topic>`                                                             | Search local documentation                                                               |
+| `inspect <package-id>`                                                                   | Inspect package and source metadata                                                      |
+| `refresh <package-id>`                                                                   | Rebuild from stored source metadata                                                      |
+| `import <package-file>`                                                                  | Install a SQLite package                                                                 |
+| `export <package-id> <destination>`                                                      | Copy a package artifact                                                                  |
+| `search-packages <registry> <name> [version]`                                            | Search hosted registry                                                                   |
+| `download-package <registry> <name> <version>`                                           | Download and install package                                                             |
+| `remove <package-id>`                                                                    | Remove installed package                                                                 |
+
+`list` renders a package inventory table with package name, version, size, documents, sections, and a totals summary.
 
 `install <registry/name|name|source> [version]` resolves a package from the configured registry or catalog, downloads/builds it, and installs it locally. Use `search-packages` to inspect registry versions first.
 
 The registry endpoint defaults to `http://localhost:8080`. Override it with `GROUNDKIT_REGISTRY_URL`.
+
+### Documentation discovery warnings
+
+When `add` finds no supported documentation files, it prints `No documentation
+content was found` and includes a Perplexity search URL for finding the
+appropriate documentation repository. When only a few sections are indexed,
+it prints a similar warning. This is useful for projects whose source and
+documentation are maintained in separate repositories, for example:
+
+```text
+groundkit add https://github.com/facebook/react
+Warning: Only a few sections were indexed. Search for the appropriate documentation repository: <Perplexity URL>
+
+groundkit add https://github.com/reactjs/react.dev
+```

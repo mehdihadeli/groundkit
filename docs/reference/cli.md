@@ -2,6 +2,38 @@
 
 Run commands with `groundkit <command>`.
 
+## Short aliases
+
+GroundKit uses Spectre.Console.Cli for command parsing, so commands and common
+options also support short names.
+
+Run `groundkit --help` to see the same aliases, descriptions, and examples in
+the built-in CLI help.
+
+| Command            | Short alias(es) |
+| ------------------ | --------------- |
+| `add`              | `a`             |
+| `import`           | `im`            |
+| `export`           | `ex`, `exp`     |
+| `list`             | `l`, `ls`       |
+| `inspect`          | `ins`, `info`   |
+| `query`            | `q`             |
+| `refresh`          | `rf`, `ref`     |
+| `remove`           | `rm`, `del`     |
+| `catalog`          | `c`, `cat`      |
+| `search-packages`  | `sp`, `search`  |
+| `download-package` | `dp`, `dl`      |
+| `install`          | `i`             |
+
+| Option          | Short alias |
+| --------------- | ----------- |
+| `--path`        | `-p`        |
+| `--name`        | `-n`        |
+| `--pkg-version` | `-v`        |
+| `--save`        | `-s`        |
+| `--tag`         | `-t`        |
+| `--choose-tag`  | `-c`        |
+
 During development, this repository ships repo-local `groundkit` launchers.
 Add the repository root to `PATH` once per shell session so the examples below
 run against the current source tree:
@@ -105,9 +137,25 @@ For Git repository URLs without `--tag`, GroundKit selects the latest stable tag
 | `export <package-id> <destination>`                                                      | Copy a package artifact                                                                  |
 | `search-packages <registry> <name> [version]`                                            | Search hosted registry                                                                   |
 | `download-package <registry> <name> <version>`                                           | Download and install package                                                             |
-| `remove <package-id>`                                                                    | Remove installed package                                                                 |
+| `remove <name[@version]>`                                                                | Remove one installed package version                                                     |
 
 `list` renders a package inventory table with package name, version, size, documents, sections, and a totals summary.
+
+### Remove packages
+
+Remove one installed package version by name or by an exact `name@version`
+selector:
+
+```bash
+groundkit remove mattpocock-skills
+groundkit remove mattpocock-skills@1.2.3
+groundkit remove agentgateway
+```
+
+A bare name is accepted only when one version of that package is installed. If
+multiple versions are installed, an interactive terminal lists the versions and
+asks you to choose one. Non-interactive runs list the installed versions and
+exit without deleting anything, so removal never guesses.
 
 `install <registry/name|name|source> [version]` resolves a package from the configured registry or catalog, downloads/builds it, and installs it locally. Use `search-packages` to inspect registry versions first.
 

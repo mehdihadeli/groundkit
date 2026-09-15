@@ -228,6 +228,54 @@ public sealed class SqlitePackageStore(
         return removedCount;
     }
 
+    public async Task<int> RemoveAsync(
+        string packageId,
+        string version,
+        CancellationToken cancellationToken = default
+    )
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(packageId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(version);
+
+        if (!Directory.Exists(options.RootPath))
+        {
+            return 0;
+        }
+
+        foreach (
+            var packagePath in Directory
+                .EnumerateFiles(options.RootPath, "*.db", SearchOption.TopDirectoryOnly)
+                .ToList()
+        )
+        {
+            await using var context = CreateDbContext(packagePath);
+            var manifest = await context
+                .Manifests.AsNoTracking()
+                .FirstOrDefaultAsync(cancellationToken);
+
+            if (
+                manifest is null
+                || !manifest.PackageId.Equals(packageId, StringComparison.OrdinalIgnoreCase)
+                || !string.Equals(manifest.Version, version, StringComparison.OrdinalIgnoreCase)
+            )
+            {
+                continue;
+            }
+
+            await context.DisposeAsync();
+            File.Delete(packagePath);
+            logger.LogInformation(
+                "Removed package {PackageId}@{Version} from {PackagePath}.",
+                packageId,
+                version,
+                packagePath
+            );
+            return 1;
+        }
+
+        return 0;
+    }
+
     public async Task<DocumentationSource?> GetSourceAsync(
         string packageId,
         CancellationToken cancellationToken = default

@@ -14,8 +14,28 @@ public sealed class RegistryApplication(
 {
     private readonly RegistryBundleService bundleService = new();
 
+    internal static string[] NormalizeArguments(string[] args)
+    {
+        if (args.Length == 0)
+        {
+            return args;
+        }
+
+        var normalized = args.ToArray();
+        normalized[0] = NormalizeCommand(normalized[0]) ?? string.Empty;
+
+        for (var index = 1; index < normalized.Length; index++)
+        {
+            normalized[index] = NormalizeOption(normalized[index]);
+        }
+
+        return normalized;
+    }
+
     public async Task<int> RunAsync(string[] args)
     {
+        args = NormalizeArguments(args);
+
         try
         {
             return NormalizeCommand(args.FirstOrDefault()) switch
@@ -54,14 +74,32 @@ public sealed class RegistryApplication(
         command?.ToLowerInvariant() switch
         {
             "--list" => "list",
+            "l" or "ls" => "list",
             "--validate" => "validate",
+            "v" or "val" => "validate",
             "--build" => "build",
+            "b" => "build",
             "--build-all" => "build-all",
+            "ba" => "build-all",
             "--publish" => "publish",
+            "p" or "pub" => "publish",
             "--publish-all" => "publish-all",
+            "pa" => "publish-all",
             "--bundle" => "bundle",
+            "bd" or "bun" => "bundle",
             "--import-bundle" => "import-bundle",
+            "ib" => "import-bundle",
             _ => command?.ToLowerInvariant(),
+        };
+
+    internal static string NormalizeOption(string option) =>
+        option.ToLowerInvariant() switch
+        {
+            "-d" => "--dir",
+            "-o" => "--output",
+            "-f" => "--format",
+            "-t" => "--destination",
+            _ => option,
         };
 
     private static int Validate(string[] args)
@@ -261,7 +299,7 @@ public sealed class RegistryApplication(
     )
     {
         var requested =
-            args.Length > 2 && !args[2].StartsWith("--", StringComparison.Ordinal) ? args[2] : null;
+            args.Length > 2 && !args[2].StartsWith("-", StringComparison.Ordinal) ? args[2] : null;
         var versions = definition.ResolveVersions();
         var selected = versions.SingleOrDefault(item =>
             item.Version == (requested ?? versions[0].Version)
@@ -299,7 +337,7 @@ public sealed class RegistryApplication(
     {
         var index = Array.FindIndex(
             args,
-            arg => string.Equals(arg, name, StringComparison.OrdinalIgnoreCase)
+            arg => string.Equals(NormalizeOption(arg), name, StringComparison.OrdinalIgnoreCase)
         );
         return index >= 0 && index + 1 < args.Length ? args[index + 1] : null;
     }

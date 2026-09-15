@@ -14,6 +14,31 @@
 
 Run the maintainer CLI with `groundkit-registry <command>`.
 
+Run `groundkit-registry --help` to see the same aliases, descriptions, and
+examples in the built-in CLI help.
+
+Short aliases are also available through Spectre.Console.Cli.
+
+| Command         | Short alias(es) |
+| --------------- | --------------- |
+| `list`          | `l`, `ls`       |
+| `validate`      | `v`, `val`      |
+| `build`         | `b`             |
+| `build-all`     | `ba`            |
+| `publish`       | `p`, `pub`      |
+| `publish-all`   | `pa`            |
+| `bundle`        | `bd`, `bun`     |
+| `import-bundle` | `ib`            |
+| `serve`         | `s`             |
+
+| Option          | Short alias |
+| --------------- | ----------- |
+| `--dir`         | `-d`        |
+| `--output`      | `-o`        |
+| `--format`      | `-f`        |
+| `--destination` | `-t`        |
+| `--urls`        | `-u`        |
+
 During development, this repository includes repo-local `groundkit-registry`
 launchers in the repository root. Add the repository root to `PATH` once per
 shell session, then use the same command shown below:
@@ -41,9 +66,6 @@ For a locally built package:
 dotnet pack src/groundkit-registry -c Release
 dotnet tool install --global --add-source ./src/groundkit-registry/bin/Release GroundKit.Registry
 ```
-
-Flag-style forms remain aliases, but this README uses the positional command
-form consistently.
 
 ## Commands
 

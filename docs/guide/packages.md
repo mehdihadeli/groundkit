@@ -127,6 +127,19 @@ Import it into the local store:
 groundkit import ./artifacts/react@dev.db
 ```
 
+Remove an installed package with a bare name when only one version is present,
+or target an exact version with `name@version`:
+
+```bash
+groundkit remove mattpocock-skills
+groundkit remove mattpocock-skills@1.2.3
+groundkit remove agentgateway
+```
+
+When several versions are installed, GroundKit asks you to choose a version in
+an interactive terminal. Non-interactive removal lists the installed versions
+and deletes nothing until an exact version is supplied.
+
 ## Refresh
 
 Refresh from stored source metadata after documentation changes:

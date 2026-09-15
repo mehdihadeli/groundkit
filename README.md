@@ -153,9 +153,64 @@ That is the core architectural idea behind GroundKit: build once, query locally 
 
 Run GroundKit with `groundkit <command>`.
 
+### Short aliases
+
+GroundKit commands also support short names through Spectre.Console.Cli.
+
+Run `groundkit --help`, `groundkit-registry --help`, or `groundkit-mcp --help`
+to see the same aliases and example invocations in built-in help.
+
+| Command            | Short alias(es) |
+| ------------------ | --------------- |
+| `add`              | `a`             |
+| `import`           | `im`            |
+| `export`           | `ex`, `exp`     |
+| `list`             | `l`, `ls`       |
+| `inspect`          | `ins`, `info`   |
+| `query`            | `q`             |
+| `refresh`          | `rf`, `ref`     |
+| `remove`           | `rm`, `del`     |
+| `catalog`          | `c`, `cat`      |
+| `search-packages`  | `sp`, `search`  |
+| `download-package` | `dp`, `dl`      |
+| `install`          | `i`             |
+
+Common options also have short forms:
+
+| Option          | Short alias |
+| --------------- | ----------- |
+| `--path`        | `-p`        |
+| `--name`        | `-n`        |
+| `--pkg-version` | `-v`        |
+| `--save`        | `-s`        |
+| `--tag`         | `-t`        |
+| `--choose-tag`  | `-c`        |
+
 During development, this repository includes local `groundkit` wrappers in the
 repository root. Add the repository root to `PATH` once per shell session, then
 use the same `groundkit` command shown throughout this README and the docs.
+
+### Development mode
+
+Development mode means running the current source tree directly instead of an
+installed .NET tool package. The repository root includes small launcher
+scripts named `groundkit`, `groundkit.cmd`, and `groundkit.ps1` that forward to
+`src/groundkit-cli/GroundKit.Cli.csproj` with `dotnet run`.
+
+That gives contributors one command shape everywhere:
+
+- `groundkit ...` during development, after adding the repo root to `PATH`
+- `groundkit ...` after installing or publishing the tool
+
+Shells pick the matching launcher automatically:
+
+- Git Bash or other POSIX shells use `./groundkit`
+- `cmd.exe` uses `groundkit.cmd`
+- PowerShell can use `groundkit.cmd` from `PATH` or `./groundkit.ps1` directly
+
+The same pattern also exists for the maintainer CLI as `groundkit-registry`.
+Use that command during development to run `src/groundkit-registry` from the
+current checkout.
 
 ```bash
 export PATH="$PWD:$PATH"
@@ -195,9 +250,6 @@ groundkit inspect react
 groundkit query react "useEffect cleanup"
 ```
 
-Flag-style forms remain aliases, but this README uses the positional command
-form consistently.
-
 ### `groundkit add <source>`
 
 Build and install a package from source. Source type is detected automatically.
@@ -205,8 +257,6 @@ Use this for libraries missing from the registry, private or internal docs, or
 when you need to build from a specific source yourself.
 
 The examples below use the installed `groundkit` executable.
-
-The flag form, `groundkit --add <source>`, is also supported.
 
 **From the starter catalog:**
 
@@ -446,11 +496,14 @@ groundkit export react ./artifacts
 
 ### `groundkit list`, `inspect`, `query`, `refresh`, and `remove`
 
-- `--list` displays installed package ids, versions, document counts, chunk counts, and build times.
-- `--inspect <package-id>` displays package metadata, source information, and local database path.
-- `--query <package-id> <topic>` searches one installed package locally.
-- `--refresh <package-id>` rebuilds a package from its recorded source.
-- `--remove <package-id>` removes an installed package and its local files.
+- `groundkit list` displays installed package ids, versions, document counts, section counts, and totals.
+- `groundkit inspect <package-id>` displays package metadata, source information, and local database path.
+- `groundkit query <package-id> <topic>` searches one installed package locally.
+- `groundkit refresh <package-id>` rebuilds a package from its recorded source.
+- `groundkit remove <name[@version]>` removes one installed package version. A
+  bare name is accepted when only one version is installed. If multiple
+  versions exist, GroundKit lists them and asks you to choose one interactively;
+  non-interactive runs fail without deleting anything.
 
 Examples:
 
@@ -458,21 +511,34 @@ Examples:
 groundkit list
 groundkit inspect react
 groundkit query react "useEffect cleanup"
+groundkit remove mattpocock-skills
+groundkit remove mattpocock-skills@1.2.3
+groundkit remove agentgateway
 groundkit export react ./artifacts
 ```
 
 ### Start MCP servers
 
 - `groundkit-mcp` starts the MCP server over stdio. It reads only packages already in the local store.
-- `groundkit-mcp --libs package-a,package-b` restricts the session to selected installed package names.
-- `groundkit-mcp http --urls http://localhost:3001` starts the HTTP MCP host and exposes MCP at `/mcp`.
+- `groundkit-mcp --libs package-a,package-b` or `groundkit-mcp -l package-a,package-b` restricts the session to selected installed package names.
+- `groundkit-mcp http --urls http://localhost:3001` or `groundkit-mcp h -u http://localhost:3001` starts the HTTP MCP host and exposes MCP at `/mcp`.
+
+During development, `groundkit-mcp` is also available as a repo-local wrapper after adding the repository root to `PATH`, just like `groundkit` and `groundkit-registry`.
+
+Short aliases for the MCP executable:
+
+| Command  | Short alias |
+| -------- | ----------- |
+| `http`   | `h`         |
+| `--libs` | `-l`        |
+| `--urls` | `-u`        |
 
 Examples:
 
 ```bash
 groundkit-mcp
-groundkit-mcp --libs react,vite
-groundkit-mcp http --urls http://localhost:3001
+groundkit-mcp -l react,vite
+groundkit-mcp h -u http://localhost:3001
 ```
 
 ### `groundkit catalog [query]`
@@ -484,7 +550,7 @@ groundkit catalog
 groundkit catalog react
 ```
 
-Catalog names can be passed directly to `--add`. GroundKit expands them to their
+Catalog names can be passed directly to `add`. GroundKit expands them to their
 known repository and documentation path before building a local package:
 
 ```bash
@@ -676,6 +742,28 @@ outside a registry API.
 
 `src/groundkit-registry` is separate from the user-facing `src/groundkit-cli` CLI:
 
+Short aliases for the maintainer CLI:
+
+| Command         | Short alias(es) |
+| --------------- | --------------- |
+| `list`          | `l`, `ls`       |
+| `validate`      | `v`, `val`      |
+| `build`         | `b`             |
+| `build-all`     | `ba`            |
+| `publish`       | `p`, `pub`      |
+| `publish-all`   | `pa`            |
+| `bundle`        | `bd`, `bun`     |
+| `import-bundle` | `ib`            |
+| `serve`         | `s`             |
+
+| Option          | Short alias |
+| --------------- | ----------- |
+| `--dir`         | `-d`        |
+| `--output`      | `-o`        |
+| `--format`      | `-f`        |
+| `--destination` | `-t`        |
+| `--urls`        | `-u`        |
+
 ```bash
 groundkit-registry list --dir registry
 groundkit-registry validate --dir registry
@@ -683,6 +771,12 @@ groundkit-registry build react --dir registry --output ./dist-packages
 groundkit-registry build react 19.1.0 --dir registry --output ./dist-packages
 groundkit-registry publish react --dir registry --output ./dist-packages
 groundkit-registry publish-all --dir registry --output ./dist-packages
+```
+
+Short-form example:
+
+```bash
+groundkit-registry b react -d registry -o ./dist-packages
 ```
 
 Set `REGISTRY_SERVER_URL` and `REGISTRY_PUBLISH_KEY` when publishing to an

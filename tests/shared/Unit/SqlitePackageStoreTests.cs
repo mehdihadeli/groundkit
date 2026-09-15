@@ -82,6 +82,21 @@ public sealed class SqlitePackageStoreTests : IDisposable
     }
 
     [Fact]
+    public async Task Should_Delete_Only_Requested_Package_Version()
+    {
+        var store = CreateStore();
+        await store.SaveAsync(CreateBuildResult("test-package", version: "1.0.0"));
+        await store.SaveAsync(CreateBuildResult("test-package", version: "2.0.0"));
+
+        var removed = await store.RemoveAsync("test-package", "1.0.0");
+
+        removed.ShouldBe(1);
+        var remaining = await store.ListAsync();
+        remaining.ShouldHaveSingleItem();
+        remaining[0].Version.ShouldBe("2.0.0");
+    }
+
+    [Fact]
     public async Task Should_Copy_Package_File_When_Exporting()
     {
         var store = CreateStore();
@@ -150,7 +165,8 @@ public sealed class SqlitePackageStoreTests : IDisposable
 
     private static BuildResult CreateBuildResult(
         string packageId,
-        string content = "# Title\n\nBody."
+        string content = "# Title\n\nBody.",
+        string version = "dev"
     )
     {
         var source = new DocumentationSource(
@@ -178,7 +194,7 @@ public sealed class SqlitePackageStoreTests : IDisposable
             new PackageManifest(
                 packageId,
                 packageId,
-                "dev",
+                version,
                 SourceKind.LocalDirectory,
                 "C:/test",
                 packageId,

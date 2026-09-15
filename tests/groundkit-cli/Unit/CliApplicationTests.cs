@@ -182,6 +182,63 @@ public sealed class CliApplicationTests
         exitCode.ShouldBe(0);
     }
 
+    [Theory]
+    [InlineData("a", "add")]
+    [InlineData("ls", "list")]
+    [InlineData("l", "list")]
+    [InlineData("ins", "inspect")]
+    [InlineData("q", "query")]
+    [InlineData("rf", "refresh")]
+    [InlineData("rm", "remove")]
+    [InlineData("sp", "search-packages")]
+    [InlineData("dp", "download-package")]
+    [InlineData("i", "install")]
+    [InlineData("c", "catalog")]
+    public void Should_Normalize_Short_Command_Aliases(string alias, string expected)
+    {
+        CliApplication.NormalizeCommand(alias).ShouldBe(expected);
+    }
+
+    [Fact]
+    public void Should_Normalize_Short_Option_Aliases()
+    {
+        var normalized = CliApplication.NormalizeArguments(
+            [
+                "a",
+                "./docs",
+                "-p",
+                "src",
+                "-n",
+                "react",
+                "-v",
+                "19.0.0",
+                "-s",
+                "./artifacts",
+                "-t",
+                "v19.0.0",
+                "-c",
+            ]
+        );
+
+        normalized.ShouldBe(
+            [
+                "add",
+                "./docs",
+                "--path",
+                "src",
+                "--name",
+                "react",
+                "--pkg-version",
+                "19.0.0",
+                "--save",
+                "./artifacts",
+                "--tag",
+                "v19.0.0",
+                "--choose-tag",
+            ]
+        );
+    }
+
     [Fact]
     public async Task Should_Reject_Remove_Without_Package_Id()
     {
@@ -315,6 +372,8 @@ public sealed class CliApplicationTests
         public string? Input { get; private set; }
         public string? DocsPath { get; private set; }
         public string? GitRef { get; private set; }
+        public string? Version { get; private set; }
+        public string? PackageName { get; private set; }
 
         public Task<BuildResult> BuildAsync(
             string input,
@@ -338,6 +397,24 @@ public sealed class CliApplicationTests
             Input = input;
             DocsPath = docsPath;
             GitRef = gitRef;
+            Version = version;
+            return Task.FromResult(buildResult);
+        }
+
+        public Task<BuildResult> BuildAsync(
+            string input,
+            string? docsPath,
+            CancellationToken cancellationToken,
+            string? version,
+            string? gitRef,
+            string? packageName
+        )
+        {
+            Input = input;
+            DocsPath = docsPath;
+            GitRef = gitRef;
+            Version = version;
+            PackageName = packageName;
             return Task.FromResult(buildResult);
         }
     }
@@ -352,6 +429,8 @@ public sealed class CliApplicationTests
         public string? LastRequestedPackageId { get; private set; }
         public int GetPackageCallCount { get; private set; }
         public int GetSourceCallCount { get; private set; }
+        public string? RemovedPackageId { get; private set; }
+        public string? RemovedVersion { get; private set; }
 
         public Task<string> SaveAsync(
             BuildResult buildResult,
@@ -407,6 +486,17 @@ public sealed class CliApplicationTests
             string packageId,
             CancellationToken cancellationToken = default
         ) => Task.FromResult(0);
+
+        public Task<int> RemoveAsync(
+            string packageId,
+            string version,
+            CancellationToken cancellationToken = default
+        )
+        {
+            RemovedPackageId = packageId;
+            RemovedVersion = version;
+            return Task.FromResult(1);
+        }
 
         public Task<DocumentationSource?> GetSourceAsync(
             string packageId,

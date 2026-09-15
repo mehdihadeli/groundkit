@@ -109,6 +109,12 @@ public sealed class GroundKitMcpToolsIntegrationTests
             CancellationToken cancellationToken = default
         ) => Task.FromResult(0);
 
+        public Task<int> RemoveAsync(
+            string packageId,
+            string version,
+            CancellationToken cancellationToken = default
+        ) => Task.FromResult(0);
+
         public Task<DocumentationSource?> GetSourceAsync(
             string packageId,
             CancellationToken cancellationToken = default

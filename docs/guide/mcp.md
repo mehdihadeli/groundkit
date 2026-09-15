@@ -2,8 +2,21 @@
 
 Start the local server:
 
+During development, add the repository root to `PATH` once per shell session so
+`groundkit-mcp` resolves to the repo-local launcher:
+
 ```bash
-dotnet run --project src/groundkit-mcp
+export PATH="$PWD:$PATH"
+groundkit-mcp
+```
+
+```powershell
+$env:Path = "$PWD;$env:Path"
+groundkit-mcp
+```
+
+```bash
+groundkit-mcp
 ```
 
 For an installed or published executable, configure an MCP client with:
@@ -12,8 +25,20 @@ For an installed or published executable, configure an MCP client with:
 {
   "mcpServers": {
     "groundkit": {
-      "command": "groundkit",
-      "args": ["serve"]
+      "command": "groundkit-mcp"
+    }
+  }
+}
+```
+
+To restrict the server to specific installed packages, pass `--libs` or `-l`:
+
+```json
+{
+  "mcpServers": {
+    "groundkit": {
+      "command": "groundkit-mcp",
+      "args": ["-l", "react,vite"]
     }
   }
 }

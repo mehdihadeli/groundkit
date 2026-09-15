@@ -23,6 +23,12 @@ public interface IPackageStore
 
     Task<int> RemoveAsync(string packageId, CancellationToken cancellationToken = default);
 
+    Task<int> RemoveAsync(
+        string packageId,
+        string version,
+        CancellationToken cancellationToken = default
+    );
+
     Task<DocumentationSource?> GetSourceAsync(
         string packageId,
         CancellationToken cancellationToken = default

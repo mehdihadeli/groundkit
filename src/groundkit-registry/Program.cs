@@ -4,11 +4,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
-if (args.FirstOrDefault()?.Equals("serve", StringComparison.OrdinalIgnoreCase) == true)
-{
-    return await RegistryServer.RunAsync(args.Skip(1).ToArray());
-}
-
 var builder = Host.CreateApplicationBuilder(args);
 builder.Logging.ClearProviders();
 builder.Logging.AddConsole(options => options.LogToStandardErrorThreshold = LogLevel.Trace);
@@ -23,5 +18,5 @@ builder.Services.AddHttpClient<RegistryPublisher>(client =>
     client.BaseAddress = new Uri(baseUrl + "/");
 });
 
-using var host = builder.Build();
-return await host.Services.GetRequiredService<RegistryApplication>().RunAsync(args);
+var app = RegistryCommandAppFactory.Create(builder.Services);
+return await app.RunAsync(args);

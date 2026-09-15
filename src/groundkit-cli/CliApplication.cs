@@ -14,8 +14,28 @@ public sealed class CliApplication(
     IGitReferenceProvider? gitReferenceProvider = null
 )
 {
+    internal static string[] NormalizeArguments(string[] args)
+    {
+        if (args.Length == 0)
+        {
+            return args;
+        }
+
+        var normalized = args.ToArray();
+        normalized[0] = NormalizeCommand(args[0]);
+
+        for (var index = 1; index < normalized.Length; index++)
+        {
+            normalized[index] = NormalizeOption(normalized[index]);
+        }
+
+        return normalized;
+    }
+
     public async Task<int> RunAsync(string[] args)
     {
+        args = NormalizeArguments(args);
+
         if (args.Length == 0)
         {
             ShowHelp();
@@ -409,19 +429,76 @@ public sealed class CliApplication(
     {
         if (args.Length < 2)
         {
-            AnsiConsole.MarkupLine("[red]Usage:[/] remove <package-id>");
+            AnsiConsole.MarkupLine("[red]Usage:[/] remove <name[@version]>");
             return 1;
         }
 
-        var removedCount = await packageStore.RemoveAsync(args[1]);
-        if (removedCount == 0)
+        var selector = args[1];
+        var separator = selector.LastIndexOf('@');
+        var hasVersion = separator > 0 && separator < selector.Length - 1;
+        var packageId = hasVersion ? selector[..separator] : selector;
+        var requestedVersion = hasVersion ? selector[(separator + 1)..] : null;
+        var packages = (await packageStore.ListAsync())
+            .Where(package =>
+                package.PackageId.Equals(packageId, StringComparison.OrdinalIgnoreCase)
+            )
+            .ToList();
+
+        if (requestedVersion is not null)
         {
-            AnsiConsole.MarkupLine($"[yellow]Package not found:[/] {Markup.Escape(args[1])}");
+            packages = packages
+                .Where(package =>
+                    string.Equals(
+                        package.Version ?? "dev",
+                        requestedVersion,
+                        StringComparison.OrdinalIgnoreCase
+                    )
+                )
+                .ToList();
+        }
+        else if (packages.Count > 1)
+        {
+            if (!AnsiConsole.Profile.Capabilities.Interactive)
+            {
+                AnsiConsole.MarkupLine(
+                    $"[yellow]Multiple versions of {Markup.Escape(packageId)} are installed. "
+                        + "Pass name@version to remove one:[/]"
+                );
+                foreach (var package in packages.OrderBy(package => package.Version))
+                {
+                    AnsiConsole.MarkupLine($"  {Markup.Escape(package.Version ?? "dev")}");
+                }
+
+                return 1;
+            }
+
+            var selectedVersion = AnsiConsole.Prompt(
+                new SelectionPrompt<string>()
+                    .Title($"Select version to remove for [green]{Markup.Escape(packageId)}[/]:")
+                    .AddChoices(
+                        packages
+                            .OrderBy(package => package.Version)
+                            .Select(package => package.Version ?? "dev")
+                    )
+            );
+            packages = packages
+                .Where(package => (package.Version ?? "dev") == selectedVersion)
+                .ToList();
+        }
+
+        if (packages.Count == 0)
+        {
+            AnsiConsole.MarkupLine($"[yellow]Package not found:[/] {Markup.Escape(selector)}");
             return 1;
         }
 
+        var selectedPackage = packages[0];
+        var removedCount = await packageStore.RemoveAsync(
+            selectedPackage.PackageId,
+            selectedPackage.Version ?? "dev"
+        );
         AnsiConsole.MarkupLine(
-            $"[green]Removed package files:[/] {Markup.Escape(args[1])} ({removedCount})"
+            $"[green]Removed package:[/] {Markup.Escape(selectedPackage.PackageId)}@{Markup.Escape(selectedPackage.Version ?? "dev")} ({removedCount})"
         );
         return 0;
     }
@@ -533,7 +610,7 @@ public sealed class CliApplication(
     private static void ShowHelp()
     {
         AnsiConsole.MarkupLine("[bold]GroundKit[/]");
-        AnsiConsole.MarkupLine("Use [aqua]groundkit --command[/] for shorter command syntax.");
+        AnsiConsole.MarkupLine("Use [aqua]groundkit <command>[/]. Short aliases are supported.");
         AnsiConsole.MarkupLine("Commands:");
         AnsiConsole.WriteLine(
             "  add <source> [--path path] [--name name] [--pkg-version version] [--save path] [--tag tag] [--choose-tag]"
@@ -557,7 +634,13 @@ public sealed class CliApplication(
     {
         for (var index = 0; index < args.Count - 1; index++)
         {
-            if (string.Equals(args[index], optionName, StringComparison.OrdinalIgnoreCase))
+            if (
+                string.Equals(
+                    NormalizeOption(args[index]),
+                    optionName,
+                    StringComparison.OrdinalIgnoreCase
+                )
+            )
             {
                 return args[index + 1];
             }
@@ -566,27 +649,53 @@ public sealed class CliApplication(
         return null;
     }
 
-    private static string NormalizeCommand(string command) =>
+    internal static string NormalizeCommand(string command) =>
         command.ToLowerInvariant() switch
         {
             "--add" => "add",
+            "a" => "add",
             "--import" => "import",
+            "im" => "import",
             "--export" => "export",
+            "ex" or "exp" => "export",
             "--list" => "list",
+            "l" or "ls" => "list",
             "--inspect" => "inspect",
+            "ins" or "info" => "inspect",
             "--query" => "query",
+            "q" => "query",
             "--refresh" => "refresh",
+            "rf" or "ref" => "refresh",
             "--remove" => "remove",
+            "rm" or "del" => "remove",
             "--serve" => "serve",
             "--serve-http" => "serve-http",
+            "cat" or "c" => "catalog",
             "--search-packages" => "search-packages",
+            "sp" or "search" => "search-packages",
             "--download-package" => "download-package",
+            "dp" or "dl" or "download" => "download-package",
             "--install" => "install",
+            "i" => "install",
+            "--catalog" => "catalog",
             _ => command.ToLowerInvariant(),
+        };
+
+    internal static string NormalizeOption(string option) =>
+        option.ToLowerInvariant() switch
+        {
+            "--docs-path" => "--path",
+            "-p" => "--path",
+            "-n" => "--name",
+            "-v" or "-pv" => "--pkg-version",
+            "-s" => "--save",
+            "-t" => "--tag",
+            "-c" => "--choose-tag",
+            _ => option,
         };
 
     private static bool HasFlag(IReadOnlyList<string> args, string optionName) =>
         args.Any(argument =>
-            string.Equals(argument, optionName, StringComparison.OrdinalIgnoreCase)
+            string.Equals(NormalizeOption(argument), optionName, StringComparison.OrdinalIgnoreCase)
         );
 }

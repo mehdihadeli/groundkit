@@ -4,7 +4,7 @@ using GroundKit.Core.Contracts;
 using GroundKit.Ingestion.Services;
 using Microsoft.Extensions.Logging.Abstractions;
 
-namespace GroundKitShared.Tests.Unit;
+namespace GroundKit.Core.Tests.Unit;
 
 public sealed class DocumentPackageBuilderTests : IDisposable
 {

@@ -1,5 +1,5 @@
-﻿using GroundKit.Registry;
-using GroundKitShared;
+﻿using GroundKit.Hosting;
+using GroundKit.Registry;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;

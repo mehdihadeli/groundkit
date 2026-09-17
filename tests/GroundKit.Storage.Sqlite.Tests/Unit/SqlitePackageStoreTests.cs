@@ -3,7 +3,7 @@ using GroundKit.Core.Contracts;
 using GroundKit.Storage.Sqlite;
 using Microsoft.Extensions.Logging.Abstractions;
 
-namespace GroundKitShared.Tests.Unit;
+namespace GroundKit.Storage.Sqlite.Tests.Unit;
 
 public sealed class SqlitePackageStoreTests : IDisposable
 {

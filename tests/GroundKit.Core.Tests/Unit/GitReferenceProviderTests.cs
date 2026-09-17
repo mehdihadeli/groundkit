@@ -1,6 +1,6 @@
 using GroundKit.Ingestion.Services;
 
-namespace GroundKitShared.Tests.Unit;
+namespace GroundKit.Core.Tests.Unit;
 
 public sealed class GitReferenceProviderTests
 {

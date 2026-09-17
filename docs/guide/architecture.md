@@ -2,6 +2,45 @@
 
 GroundKit separates expensive ingestion from the fast retrieval path.
 
+## Project boundaries
+
+The solution is organized around dependency direction rather than one project per
+technical noun:
+
+```text
+src/
+├── GroundKit.Abstractions/       # Shared records, options, and service interfaces
+├── GroundKit.Core/               # Ingestion, source detection, package workflows
+├── GroundKit.Storage.Sqlite/     # SQLite persistence, FTS5, and BM25 retrieval
+├── GroundKit.Hosting/            # DI composition for executable hosts
+├── GroundKit.Cli/                # User-facing command-line tool
+├── GroundKit.Mcp/                # MCP stdio and HTTP adapter
+├── GroundKit.Registry/            # Registry maintenance tool and HTTP server
+└── GroundKit.ServiceDefaults/    # Host telemetry, health checks, and resilience
+```
+
+The dependency direction is:
+
+```text
+GroundKit.Abstractions <- GroundKit.Core
+GroundKit.Abstractions <- GroundKit.Storage.Sqlite
+GroundKit.Core + GroundKit.Storage.Sqlite <- GroundKit.Hosting
+GroundKit.Hosting <- CLI, MCP, and Registry hosts
+```
+
+`GroundKit.Abstractions` has no SQLite, EF Core, MCP, or CLI dependency. SQLite
+entities remain internal to `GroundKit.Storage.Sqlite`; they are not a public
+schema package. MCP payloads remain MCP adapter contracts rather than leaking
+into the core domain.
+
+Tests follow the same ownership boundaries: `GroundKit.Core.Tests`,
+`GroundKit.Storage.Sqlite.Tests`, `GroundKit.Cli.Tests`,
+`GroundKit.Mcp.Tests`, and `GroundKit.Registry.Tests`.
+
+Protocol, client, SDK, and server packages are intentionally deferred. They
+should be introduced only when an API has independent consumers, release
+versioning, or a deployment lifecycle separate from the current host.
+
 ```mermaid
 flowchart LR
   A[Git, folder, URL, llms.txt] --> B[Ingestion]

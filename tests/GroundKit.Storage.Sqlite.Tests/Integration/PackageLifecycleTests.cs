@@ -3,7 +3,7 @@ using GroundKit.Ingestion.Services;
 using GroundKit.Storage.Sqlite;
 using Microsoft.Extensions.Logging.Abstractions;
 
-namespace GroundKitShared.Tests.Integration;
+namespace GroundKit.Storage.Sqlite.Tests.Integration;
 
 public sealed class PackageLifecycleTests : IDisposable
 {

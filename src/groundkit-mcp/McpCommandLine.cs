@@ -1,5 +1,5 @@
+using GroundKit.Hosting;
 using GroundKit.Mcp.DependencyInjection;
-using GroundKitShared;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;

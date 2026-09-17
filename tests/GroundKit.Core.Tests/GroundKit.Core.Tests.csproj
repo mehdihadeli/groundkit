@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
     <PackageReference Include="NSubstitute" />
@@ -6,7 +6,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\shared\GroundKitShared\GroundKitShared.csproj" />
+    <ProjectReference Include="..\..\src\GroundKit.Core\GroundKit.Core.csproj" />
   </ItemGroup>
 
 </Project>

@@ -8,8 +8,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\shared\GroundKitShared\GroundKitShared.csproj" />
-    <ProjectReference Include="..\shared\ServiceDefaults\ServiceDefaults.csproj" />
+    <ProjectReference Include="..\GroundKit.Hosting\GroundKit.Hosting.csproj" />
+    <ProjectReference Include="..\GroundKit.ServiceDefaults\ServiceDefaults.csproj" />
   </ItemGroup>
 
   <ItemGroup>

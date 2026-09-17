@@ -3,7 +3,7 @@ using GroundKit.Ingestion.DependencyInjection;
 using GroundKit.Storage.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace GroundKitShared;
+namespace GroundKit.Hosting;
 
 public static class GroundKitServiceCollectionExtensions
 {

@@ -9,7 +9,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\GroundKit.Hosting\GroundKit.Hosting.csproj" />
-    <ProjectReference Include="..\GroundKit.ServiceDefaults\ServiceDefaults.csproj" />
+    <ProjectReference Include="..\GroundKit.ServiceDefaults\GroundKit.ServiceDefaults.csproj" />
   </ItemGroup>
 
   <ItemGroup>

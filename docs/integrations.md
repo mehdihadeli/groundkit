@@ -14,7 +14,7 @@ Add a workspace MCP configuration in `.vscode/mcp.json`:
     "groundkit": {
       "type": "stdio",
       "command": "dotnet",
-      "args": ["run", "--project", "src/groundkit-mcp"]
+      "args": ["run", "--project", "src/GroundKit.Mcp"]
     }
   }
 }

@@ -1,7 +1,0 @@
-<Project Sdk="Microsoft.NET.Sdk">
-
-  <ItemGroup>
-    <ProjectReference Include="..\..\src\groundkit-registry\GroundKit.Registry.csproj" />
-  </ItemGroup>
-
-</Project>

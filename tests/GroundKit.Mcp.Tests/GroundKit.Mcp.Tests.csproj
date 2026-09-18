@@ -6,7 +6,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\groundkit-mcp\GroundKit.Mcp.csproj" />
+    <ProjectReference Include="..\..\src\GroundKit.Mcp\GroundKit.Mcp.csproj" />
   </ItemGroup>
 
 </Project>

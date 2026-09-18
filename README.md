@@ -195,7 +195,7 @@ use the same `groundkit` command shown throughout this README and the docs.
 Development mode means running the current source tree directly instead of an
 installed .NET tool package. The repository root includes small launcher
 scripts named `groundkit`, `groundkit.cmd`, and `groundkit.ps1` that forward to
-`src/groundkit-cli/GroundKit.Cli.csproj` with `dotnet run`.
+`src/GroundKit.Cli/GroundKit.Cli.csproj` with `dotnet run`.
 
 That gives contributors one command shape everywhere:
 
@@ -209,7 +209,7 @@ Shells pick the matching launcher automatically:
 - PowerShell can use `groundkit.cmd` from `PATH` or `./groundkit.ps1` directly
 
 The same pattern also exists for the maintainer CLI as `groundkit-registry`.
-Use that command during development to run `src/groundkit-registry` from the
+Use that command during development to run `src/GroundKit.Registry` from the
 current checkout.
 
 ```bash
@@ -236,13 +236,13 @@ groundkit list
 For a locally built package, install from its package directory:
 
 ```powershell
-dotnet pack src/groundkit-cli -c Release
-dotnet tool install --global --add-source ./src/groundkit-cli/bin/Release GroundKit
+dotnet pack src/GroundKit.Cli -c Release
+dotnet tool install --global --add-source ./src/GroundKit.Cli/bin/Release GroundKit
 ```
 
 Update a NuGet installation with `dotnet tool update --global GroundKit`.
 Update a local package installation with `dotnet tool update --global
---add-source ./src/groundkit-cli/bin/Release GroundKit`.
+--add-source ./src/GroundKit.Cli/bin/Release GroundKit`.
 
 ```powershell
 groundkit list
@@ -740,7 +740,7 @@ outside a registry API.
 
 ### Registry maintainer commands
 
-`src/groundkit-registry` is separate from the user-facing `src/groundkit-cli` CLI:
+`src/GroundKit.Registry` is separate from the user-facing `src/GroundKit.Cli` CLI:
 
 Short aliases for the maintainer CLI:
 

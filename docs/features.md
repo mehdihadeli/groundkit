@@ -37,7 +37,7 @@ description: See how GroundKit builds, searches, connects, and shares versioned 
   </div>
   <div class="feature-panel">
     <div class="panel-label">BUILD A PACKAGE</div>
-    <div class="feature-code">$ dotnet run --project<br>src/groundkit-cli -- add react<br><br>OK source detected: git<br>OK sections extracted: 1,842<br>OK package: react@19.1.0.db</div>
+    <div class="feature-code">$ dotnet run --project<br>src/GroundKit.Cli -- add react<br><br>OK source detected: git<br>OK sections extracted: 1,842<br>OK package: react@19.1.0.db</div>
 
   </div>
 </div>
@@ -74,7 +74,7 @@ description: See how GroundKit builds, searches, connects, and shares versioned 
   </div>
   <div class="feature-panel">
     <div class="panel-label">MCP CONFIGURATION</div>
-    <div class="feature-code">{<br>&nbsp;&nbsp;"servers": {<br>&nbsp;&nbsp;&nbsp;&nbsp;"groundkit": {<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"type": "stdio",<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"command": "dotnet",<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"args": ["run", "--project",<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"src/groundkit-mcp"]<br>&nbsp;&nbsp;&nbsp;&nbsp;}<br>&nbsp;&nbsp;}<br>}</div>
+    <div class="feature-code">{<br>&nbsp;&nbsp;"servers": {<br>&nbsp;&nbsp;&nbsp;&nbsp;"groundkit": {<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"type": "stdio",<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"command": "dotnet",<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"args": ["run", "--project",<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"src/GroundKit.Mcp"]<br>&nbsp;&nbsp;&nbsp;&nbsp;}<br>&nbsp;&nbsp;}<br>}</div>
   </div>
 </div>
 

@@ -63,8 +63,8 @@ groundkit-registry list
 For a locally built package:
 
 ```powershell
-dotnet pack src/groundkit-registry -c Release
-dotnet tool install --global --add-source ./src/groundkit-registry/bin/Release GroundKit.Registry
+dotnet pack src/GroundKit.Registry -c Release
+dotnet tool install --global --add-source ./src/GroundKit.Registry/bin/Release GroundKit.Registry
 ```
 
 ## Commands

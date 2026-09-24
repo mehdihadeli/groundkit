@@ -1,5 +1,3 @@
-using GroundKit.Mcp;
-
 namespace GroundKit.Mcp.Tests.Unit;
 
 public sealed class McpCommandLineTests
@@ -16,9 +14,17 @@ public sealed class McpCommandLineTests
     public void Should_Normalize_Short_Option_Aliases()
     {
         var normalized = McpCommandLine.NormalizeArguments(
-            ["h", "-u", "http://localhost:3001", "-l", "react,vite"]
+            ["h", "-u", "http://localhost:4000", "-l", "react,vite"]
         );
 
-        normalized.ShouldBe(["http", "--urls", "http://localhost:3001", "--libs", "react,vite"]);
+        normalized.ShouldBe(["http", "--urls", "http://localhost:4000", "--libs", "react,vite"]);
+    }
+
+    [Fact]
+    public void Should_Normalize_Http_Shorthand_With_Port()
+    {
+        var normalized = McpCommandLine.NormalizeArguments(["--http", "4000", "--host", "0.0.0.0"]);
+
+        normalized.ShouldBe(["http", "--port", "4000", "--host", "0.0.0.0"]);
     }
 }

@@ -67,7 +67,7 @@ groundkit inspect my-library
 ## Start MCP
 
 ```bash
-dotnet run --project src/groundkit-mcp
+dotnet run --project src/GroundKit.Mcp
 ```
 
 The server uses stdio transport. Add it to your agent configuration using the command and arguments shown in [MCP setup](/guide/mcp).

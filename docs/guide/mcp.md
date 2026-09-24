@@ -1,5 +1,10 @@
 # MCP setup
 
+GroundKit supports both standard MCP transports:
+
+- `stdio` is the default and is best for one agent process per session.
+- Streamable HTTP is available at `/mcp` for multiple clients or a container.
+
 Start the local server:
 
 During development, add the repository root to `PATH` once per shell session so
@@ -9,6 +14,37 @@ During development, add the repository root to `PATH` once per shell session so
 export PATH="$PWD:$PATH"
 groundkit-mcp
 ```
+
+Start the Streamable HTTP server locally:
+
+```bash
+groundkit-mcp --http
+groundkit-mcp --http 4000
+groundkit-mcp --http 4000 --host 0.0.0.0
+```
+
+The default HTTP endpoint is `http://127.0.0.1:4000/mcp`.
+Use `--libs react,vite` with either transport to restrict the session.
+
+For Docker, start the MCP service from the repository root:
+
+```bash
+docker compose up --build mcp
+```
+
+The container exposes `http://localhost:8081/mcp` and stores its package data
+in the `mcp-data` volume. Install or import packages into the mounted
+`GROUNDKIT_HOME` before querying them.
+
+The Docker image defaults to Streamable HTTP, but stdio is also supported:
+
+```bash
+docker compose run --rm -i mcp-stdio
+```
+
+Use `mcp-stdio` when an MCP client launches Docker as its subprocess. The
+container communicates over stdin/stdout and does not publish a network port.
+Both Docker services use the same `mcp-data` package volume.
 
 ```powershell
 $env:Path = "$PWD;$env:Path"
@@ -26,6 +62,19 @@ For an installed or published executable, configure an MCP client with:
   "mcpServers": {
     "groundkit": {
       "command": "groundkit-mcp"
+    }
+  }
+}
+```
+
+For an HTTP-capable MCP host, configure the URL directly:
+
+```json
+{
+  "mcpServers": {
+    "groundkit": {
+      "type": "streamable-http",
+      "url": "http://localhost:8081/mcp"
     }
   }
 }
@@ -54,6 +103,16 @@ To restrict the server to specific installed packages, pass `--libs` or `-l`:
 6. Answer from returned sections. If no useful hits return, resolve the source or refine the query; do not silently fall back to invented documentation.
 
 `get_docs` is a compatibility alias for `query-docs`. Both return the same structured payload: package ID, version, token total, and focused hits with document and section titles, content, code presence, and relevance scores.
+
+The equivalent CLI command is:
+
+```bash
+groundkit query nextjs "middleware authentication"
+groundkit query "nextjs@16.0" "middleware authentication"
+```
+
+A bare name selects the newest installed version. `name@version` selects that
+exact installed version. CLI output uses the same JSON fields as `get_docs`.
 
 ## Query shape
 

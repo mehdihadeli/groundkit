@@ -37,7 +37,7 @@ GroundKit is meant to cover the full local documentation workflow:
 - Package build pipeline producing manifests, documents, chunks, fingerprints, and warnings.
 - SQLite-backed package store.
 - Lexical retrieval with max token budget, max hits, and relative score cutoff.
-- MCP stdio server.
+- MCP server with stdio and Streamable HTTP transports.
 - MCP tools for source resolution and docs querying.
 - Context7-style MCP compatibility tools: `get_docs` and `library_catalog`.
 - Curated starter catalog of 20 popular JavaScript and web libraries.
@@ -85,7 +85,7 @@ In other words, ingestion happens ahead of time and retrieval happens on demand.
 
 ### Runtime flow
 
-When you run `groundkit-mcp`, the MCP host starts a stdio MCP server. The MCP registration comes from the `GroundKit.Mcp` assembly, where tool methods are discovered and exposed through the Model Context Protocol server SDK.
+When you run `groundkit-mcp`, the MCP host starts a stdio MCP server by default. Pass `--http [port]` to expose the same tools through Streamable HTTP at `/mcp`. The MCP registration comes from the `GroundKit.Mcp` assembly, where tool methods are discovered and exposed through the Model Context Protocol server SDK.
 
 At runtime the agent talks to GroundKit over stdio, not HTTP. The server does not fetch the internet during the normal query path. It assumes packages have already been built and installed locally under the package store directory.
 
@@ -195,7 +195,7 @@ use the same `groundkit` command shown throughout this README and the docs.
 Development mode means running the current source tree directly instead of an
 installed .NET tool package. The repository root includes small launcher
 scripts named `groundkit`, `groundkit.cmd`, and `groundkit.ps1` that forward to
-`src/groundkit-cli/GroundKit.Cli.csproj` with `dotnet run`.
+`src/GroundKit.Cli/GroundKit.Cli.csproj` with `dotnet run`.
 
 That gives contributors one command shape everywhere:
 
@@ -209,7 +209,7 @@ Shells pick the matching launcher automatically:
 - PowerShell can use `groundkit.cmd` from `PATH` or `./groundkit.ps1` directly
 
 The same pattern also exists for the maintainer CLI as `groundkit-registry`.
-Use that command during development to run `src/groundkit-registry` from the
+Use that command during development to run `src/GroundKit.Registry` from the
 current checkout.
 
 ```bash
@@ -236,13 +236,13 @@ groundkit list
 For a locally built package, install from its package directory:
 
 ```powershell
-dotnet pack src/groundkit-cli -c Release
-dotnet tool install --global --add-source ./src/groundkit-cli/bin/Release GroundKit
+dotnet pack src/GroundKit.Cli -c Release
+dotnet tool install --global --add-source ./src/GroundKit.Cli/bin/Release GroundKit
 ```
 
 Update a NuGet installation with `dotnet tool update --global GroundKit`.
 Update a local package installation with `dotnet tool update --global
---add-source ./src/groundkit-cli/bin/Release GroundKit`.
+--add-source ./src/GroundKit.Cli/bin/Release GroundKit`.
 
 ```powershell
 groundkit list
@@ -498,7 +498,8 @@ groundkit export react ./artifacts
 
 - `groundkit list` displays installed package ids, versions, document counts, section counts, and totals.
 - `groundkit inspect <package-id>` displays package metadata, source information, and local database path.
-- `groundkit query <package-id> <topic>` searches one installed package locally.
+- `groundkit query <library> <topic>` searches one installed package locally and returns the same JSON shape as MCP `get_docs`.
+- Use `library@version` for an exact installed version; a bare library name selects the newest installed version.
 - `groundkit refresh <package-id>` rebuilds a package from its recorded source.
 - `groundkit remove <name[@version]>` removes one installed package version. A
   bare name is accepted when only one version is installed. If multiple
@@ -511,6 +512,7 @@ Examples:
 groundkit list
 groundkit inspect react
 groundkit query react "useEffect cleanup"
+groundkit query 'nextjs@16.0' 'middleware authentication'
 groundkit remove mattpocock-skills
 groundkit remove mattpocock-skills@1.2.3
 groundkit remove agentgateway
@@ -521,7 +523,10 @@ groundkit export react ./artifacts
 
 - `groundkit-mcp` starts the MCP server over stdio. It reads only packages already in the local store.
 - `groundkit-mcp --libs package-a,package-b` or `groundkit-mcp -l package-a,package-b` restricts the session to selected installed package names.
-- `groundkit-mcp http --urls http://localhost:3001` or `groundkit-mcp h -u http://localhost:3001` starts the HTTP MCP host and exposes MCP at `/mcp`.
+- `groundkit-mcp --http [port] --host <host>` starts the Streamable HTTP MCP host and exposes MCP at `/mcp`.
+- `groundkit-mcp http --urls http://localhost:4000` or `groundkit-mcp h -u http://localhost:4000` provides the explicit URL form.
+- `docker compose up --build mcp` starts the HTTP server at `http://localhost:8081/mcp`.
+- `docker compose run --rm -i mcp-stdio` runs the Docker MCP server over stdio for clients that launch containers as subprocesses.
 
 During development, `groundkit-mcp` is also available as a repo-local wrapper after adding the repository root to `PATH`, just like `groundkit` and `groundkit-registry`.
 
@@ -538,7 +543,7 @@ Examples:
 ```bash
 groundkit-mcp
 groundkit-mcp -l react,vite
-groundkit-mcp h -u http://localhost:3001
+groundkit-mcp --http 4000 --host 0.0.0.0
 ```
 
 ### `groundkit catalog [query]`
@@ -740,7 +745,7 @@ outside a registry API.
 
 ### Registry maintainer commands
 
-`src/groundkit-registry` is separate from the user-facing `src/groundkit-cli` CLI:
+`src/GroundKit.Registry` is separate from the user-facing `src/GroundKit.Cli` CLI:
 
 Short aliases for the maintainer CLI:
 

@@ -1,7 +1,7 @@
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src
 COPY . .
-RUN dotnet publish src/groundkit-registry/GroundKitRegistry.csproj -c Release -o /app/publish --no-self-contained
+RUN dotnet publish src/GroundKit.Registry/GroundKit.Registry.csproj -c Release -o /app/publish --no-self-contained
 
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
 WORKDIR /app

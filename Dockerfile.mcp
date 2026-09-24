@@ -5,8 +5,6 @@ RUN dotnet publish src/GroundKit.Mcp/GroundKit.Mcp.csproj -c Release -o /app/pub
 
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
 WORKDIR /app
-RUN addgroup --system app \
-	&& adduser --system --ingroup app app
 COPY --from=build /app/publish .
 RUN mkdir -p /data && chown -R app:app /app /data
 USER app

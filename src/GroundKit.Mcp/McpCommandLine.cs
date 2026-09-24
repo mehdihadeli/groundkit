@@ -87,7 +87,7 @@ internal static class McpCommandLine
         builder.Logging.ClearProviders();
         builder.Logging.AddConsole(options => options.LogToStandardErrorThreshold = LogLevel.Trace);
         builder.Services.AddGroundKitServices();
-        builder.Services.AddGroundKitMcp();
+        builder.Services.AddGroundKitMcp(useHttpTransport: false);
 
         using var host = builder.Build();
         await host.Services.GetRequiredService<GroundKitMcpServer>().RunAsync();
@@ -121,7 +121,7 @@ internal static class McpCommandLine
         var builder = WebApplication.CreateBuilder([]);
         builder.AddServiceDefaults();
         builder.Services.AddGroundKitServices();
-        builder.Services.AddGroundKitMcp();
+        builder.Services.AddGroundKitMcp(useStdioTransport: false);
         builder.WebHost.UseUrls(
             string.IsNullOrWhiteSpace(urls)
                 ? $"http://{(string.IsNullOrWhiteSpace(host) ? "127.0.0.1" : host)}:{port ?? 4000}"

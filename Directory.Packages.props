@@ -28,7 +28,7 @@
     <PackageVersion Include="Shouldly" Version="4.3.0" />
     <PackageVersion Include="Spectre.Console" Version="0.57.2" />
     <PackageVersion Include="Spectre.Console.Cli" Version="1.0.0-alpha.0.16" />
-    <PackageVersion Include="SQLitePCLRaw.bundle_winsqlite3" Version="2.1.11" />
+    <PackageVersion Include="SQLitePCLRaw.bundle_e_sqlite3" Version="3.0.5" />
     <PackageVersion Include="xunit.v3.mtp-v2" Version="3.2.1" />
     <PackageVersion Include="YamlDotNet" Version="16.3.0" />
   </ItemGroup>

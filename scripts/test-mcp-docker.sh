@@ -12,7 +12,7 @@ docker compose up --detach mcp
 
 initialize_request='{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-03-26","capabilities":{},"clientInfo":{"name":"GroundKit.DockerTests","version":"1.0"}}}'
 
-curl --fail --silent --show-error --retry 20 --retry-connrefused \
+curl --fail --silent --show-error --retry 20 --retry-all-errors --retry-connrefused \
   --header 'Accept: application/json, text/event-stream' \
   --header 'Content-Type: application/json' \
   --data "$initialize_request" \

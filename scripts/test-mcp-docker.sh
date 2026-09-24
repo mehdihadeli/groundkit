@@ -18,6 +18,6 @@ curl --fail --silent --show-error --retry 20 --retry-all-errors --retry-connrefu
   --data "$initialize_request" \
   http://localhost:8081/mcp | grep -q '"result"'
 
-printf '%s\n' "$initialize_request" \
+{ printf '%s\n' "$initialize_request"; sleep 1; } \
   | timeout 30s docker compose run --rm --no-TTY mcp-stdio \
   | grep -q '"result"'

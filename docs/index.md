@@ -45,7 +45,7 @@ Start with the workflow that matches your next task. Each path leads to a concre
   </a>
   <a href="/integrations" class="home-path">
     <strong>Connect an agent</strong>
-    <span>Copy a standard stdio configuration for your MCP-compatible host.</span>
+    <span>Connect with stdio or Streamable HTTP from your MCP-compatible host.</span>
   </a>
 </div>
 
@@ -73,6 +73,6 @@ Documentation lookup should disappear into the development loop. Add packages du
 
 ## One server, any MCP client
 
-GroundKit speaks standard stdio MCP. Connect it to your editor or agent host, then use the same package store from interactive sessions and automation.
+GroundKit speaks standard stdio MCP and Streamable HTTP. Connect it to your editor, agent host, or shared container, then use the same package store from interactive sessions and automation.
 
 [Configure an integration](/integrations) <span class="home-arrow">-></span>

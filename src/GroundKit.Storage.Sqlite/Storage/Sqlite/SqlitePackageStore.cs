@@ -368,13 +368,21 @@ LIMIT $limit;";
     }
 
     private async Task<PackageSummary?> FindPackageAsync(
-        string packageId,
+        string packageSelector,
         CancellationToken cancellationToken
     )
     {
+        var separator = packageSelector.LastIndexOf('@');
+        var packageId = separator > 0 ? packageSelector[..separator] : packageSelector;
+        var version = separator > 0 ? packageSelector[(separator + 1)..] : null;
+
         return (await ListAsync(cancellationToken))
             .Where(summary =>
                 summary.PackageId.Equals(packageId, StringComparison.OrdinalIgnoreCase)
+                && (
+                    version is null
+                    || string.Equals(summary.Version, version, StringComparison.OrdinalIgnoreCase)
+                )
             )
             .OrderByDescending(summary => summary.BuiltAt)
             .FirstOrDefault();

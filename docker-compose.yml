@@ -56,6 +56,29 @@ services:
       timeout: 5s
       retries: 10
 
+  mcp:
+    build:
+      context: .
+      dockerfile: Dockerfile.mcp
+    environment:
+      GROUNDKIT_HOME: /data
+    ports:
+      - "8081:8080"
+    volumes:
+      - mcp-data:/data
+
+  mcp-stdio:
+    build:
+      context: .
+      dockerfile: Dockerfile.mcp
+    entrypoint: ["dotnet", "GroundKit.Mcp.dll"]
+    environment:
+      GROUNDKIT_HOME: /data
+    stdin_open: true
+    volumes:
+      - mcp-data:/data
+
 volumes:
   minio-data:
   registry-data:
+  mcp-data:

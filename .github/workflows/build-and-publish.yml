@@ -1,0 +1,138 @@
+name: Build, test, and publish
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+    tags:
+      - "v*"
+
+permissions:
+  contents: read
+
+jobs:
+  build-test:
+    name: Build and test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Restore
+        run: dotnet restore GroundKit.slnx
+
+      - name: Build
+        run: dotnet build GroundKit.slnx --configuration Release --no-restore
+
+      - name: Test
+        run: dotnet test GroundKit.slnx --configuration Release --no-build
+
+      - name: Run Docker MCP smoke tests
+        run: bash scripts/test-mcp-docker.sh
+
+  calculate-version:
+    name: Calculate release version
+    if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')
+    needs: build-test
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Install nbgv CLI
+        run: dotnet tool install --tool-path "$RUNNER_TEMP/nbgv" nbgv --version 3.10.94
+
+      - name: Calculate version
+        id: version
+        shell: bash
+        run: |
+          version="$($RUNNER_TEMP/nbgv/nbgv get-version -v SemVer2)"
+          echo "Calculated SemVer2 version: $version"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+  publish:
+    name: Publish package and release assets
+    if: startsWith(github.ref, 'refs/tags/v') || (github.ref == 'refs/heads/main' && contains(needs['calculate-version'].outputs.version, '-preview.'))
+    needs:
+      - build-test
+      - calculate-version
+    runs-on: ubuntu-latest
+    environment: nuget
+    permissions:
+      contents: write
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Restore
+        run: dotnet restore src/GroundKit.Cli/GroundKit.Cli.csproj
+
+      - name: Pack
+        run: dotnet pack src/GroundKit.Cli/GroundKit.Cli.csproj --configuration Release --no-restore --output artifacts -p:PublicRelease=true -p:PackageVersion=${{ needs['calculate-version'].outputs.version }}
+
+      - name: Publish to NuGet.org
+        run: dotnet nuget push "artifacts/*.nupkg" --api-key "${{ secrets.NUGET_API_KEY }}" --source https://api.nuget.org/v3/index.json --skip-duplicate
+
+      - name: Publish self-contained executables
+        shell: bash
+        run: |
+          set -euo pipefail
+          for runtime in linux-x64 osx-x64 osx-arm64; do
+            publish_dir="release/$runtime"
+            mkdir -p "$publish_dir"
+            dotnet publish src/GroundKit.Cli/GroundKit.Cli.csproj \
+              --configuration Release \
+              --runtime "$runtime" \
+              --self-contained true \
+              --output "$publish_dir" \
+              -p:PublishSingleFile=true \
+              -p:IncludeNativeLibrariesForSelfExtract=true \
+              -p:PublishTrimmed=false
+            tar -czf "artifacts/groundkit-$runtime.tar.gz" -C "$publish_dir" GroundKit.Cli
+          done
+
+      - name: Publish matching Release Drafter draft
+        if: always()
+        uses: release-drafter/release-drafter@v7
+        with:
+          config-name: release-drafter.yml
+          version: ${{ needs['calculate-version'].outputs.version }}
+          name: v${{ needs['calculate-version'].outputs.version }}
+          tag: ${{ startsWith(github.ref, 'refs/tags/v') && github.ref_name || format('v{0}', needs['calculate-version'].outputs.version) }}
+          publish: ${{ startsWith(github.ref, 'refs/tags/v') && !contains(needs['calculate-version'].outputs.version, '-preview.') }}
+          prerelease: ${{ contains(needs['calculate-version'].outputs.version, '-') }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload release assets
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release upload "${{ startsWith(github.ref, 'refs/tags/v') && github.ref_name || format('v{0}', needs['calculate-version'].outputs.version) }}" artifacts/groundkit-*.tar.gz --clobber

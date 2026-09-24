@@ -1,3 +1,4 @@
+using System.Text.Json;
 using System.Text.RegularExpressions;
 using GroundKit.Core.Abstractions;
 using GroundKit.Core.Contracts;
@@ -372,7 +373,34 @@ public sealed class CliApplication(
 
         var packageId = args[1];
         var topic = string.Join(' ', args.Skip(2));
+        var pretty = HasFlag(args, "--pretty");
+        if (pretty)
+        {
+            topic = string.Join(' ', args.Skip(2).Where(argument => argument != "--pretty"));
+        }
+
         var response = await packageStore.QueryAsync(new DocsQueryRequest(packageId, topic));
+
+        if (!pretty)
+        {
+            var payload = new
+            {
+                packageId = response.PackageId,
+                version = response.Version,
+                totalTokens = response.TotalTokens,
+                hits = response.Hits.Select(hit => new
+                {
+                    documentTitle = hit.DocumentTitle,
+                    sectionTitle = hit.SectionTitle,
+                    content = hit.Content,
+                    tokenEstimate = hit.TokenEstimate,
+                    hasCode = hit.HasCode,
+                    score = hit.Score,
+                }),
+            };
+            Console.WriteLine(JsonSerializer.Serialize(payload));
+            return 0;
+        }
 
         if (response.Hits.Count == 0)
         {

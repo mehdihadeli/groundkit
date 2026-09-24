@@ -58,6 +58,57 @@ public sealed class PackageLifecycleTests : IDisposable
     }
 
     [Fact]
+    public async Task Should_Query_Exact_Package_Version_By_Name_And_Version()
+    {
+        var docsPath = Path.Combine(_tempRoot, "docs");
+        Directory.CreateDirectory(docsPath);
+        await File.WriteAllTextAsync(
+            Path.Combine(docsPath, "intro.md"),
+            "# Intro\n\nVersioned docs."
+        );
+
+        var builder = new DocumentPackageBuilder(
+            new SourceDetector(),
+            new TestHttpClientFactory(),
+            NullLogger<DocumentPackageBuilder>.Instance
+        );
+        var buildResult = await builder.BuildAsync(docsPath);
+        var versionOne = buildResult with
+        {
+            Manifest = buildResult.Manifest with
+            {
+                Version = "1.0.0",
+                BuiltAt = DateTimeOffset.UtcNow.AddMinutes(-1),
+            },
+        };
+        var versionTwo = buildResult with
+        {
+            Manifest = buildResult.Manifest with
+            {
+                Version = "2.0.0",
+                BuiltAt = DateTimeOffset.UtcNow,
+            },
+        };
+
+        var store = new SqlitePackageStore(
+            new PackageStoreOptions(Path.Combine(_tempRoot, "packages")),
+            NullLogger<SqlitePackageStore>.Instance
+        );
+        await store.SaveAsync(versionOne);
+        await store.SaveAsync(versionTwo);
+
+        var latest = await store.QueryAsync(
+            new DocsQueryRequest(buildResult.Manifest.PackageId, "Versioned")
+        );
+        var exact = await store.QueryAsync(
+            new DocsQueryRequest($"{buildResult.Manifest.PackageId}@1.0.0", "Versioned")
+        );
+
+        latest.Version.ShouldBe("2.0.0");
+        exact.Version.ShouldBe("1.0.0");
+    }
+
+    [Fact]
     public async Task Should_Round_Trip_Exported_And_Imported_Package()
     {
         var docsPath = Path.Combine(_tempRoot, "docs");

@@ -34,6 +34,9 @@ the built-in CLI help.
 | `--tag`         | `-t`        |
 | `--choose-tag`  | `-c`        |
 
+`--verbose` enables informational logs on standard error. Without it, the CLI
+only emits error-level logs; command results remain on standard output.
+
 During development, this repository ships repo-local `groundkit` launchers.
 Add the repository root to `PATH` once per shell session so the examples below
 run against the current source tree:

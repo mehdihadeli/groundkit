@@ -130,13 +130,25 @@ public sealed class QueryCliCommand(CliApplication application) : Command<QueryC
 
         [CommandArgument(1, "<TOPIC>")]
         public string Topic { get; init; } = string.Empty;
+
+        [CommandOption("--pretty")]
+        public bool Pretty { get; init; }
     }
 
     protected override int Execute(
         CommandContext context,
         Settings settings,
         CancellationToken cancellationToken
-    ) => CliCommandArguments.Run(application, ["query", settings.PackageId, settings.Topic]);
+    ) =>
+        CliCommandArguments.Run(
+            application,
+            [
+                "query",
+                settings.PackageId,
+                settings.Topic,
+                .. (settings.Pretty ? new[] { "--pretty" } : Array.Empty<string>()),
+            ]
+        );
 }
 
 public sealed class RefreshCliCommand(CliApplication application)

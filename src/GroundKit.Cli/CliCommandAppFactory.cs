@@ -43,7 +43,9 @@ internal static class CliCommandAppFactory
             config
                 .AddCommand<QueryCliCommand>("query")
                 .WithAlias("q")
-                .WithDescription("Search one installed package for relevant sections.")
+                .WithDescription(
+                    "Search an installed package and return MCP-compatible JSON. Use name@version for an exact version."
+                )
                 .WithExample("q", "react", "useEffect cleanup");
             config
                 .AddCommand<RefreshCliCommand>("refresh")
